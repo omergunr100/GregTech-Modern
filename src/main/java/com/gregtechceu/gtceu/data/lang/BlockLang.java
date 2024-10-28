@@ -29,6 +29,10 @@ public class BlockLang {
         replace(provider, "block.gtceu.wire_coil.tooltip_cracking", "§8Cracking Unit:");
         replace(provider, "block.gtceu.wire_coil.tooltip_energy_cracking", "  §aEnergy Usage: §f%s%%");
 
+        // Substation capacitors
+        provider.add("block.gtceu.substation_capacitor.tooltip_empty", "§7For filling space in your Power Substation");
+        provider.add("block.gtceu.substation_capacitor.tooltip_filled", "§cEnergy Capacity: §f%d EU");
+
         // Casings
         replace(provider, "block.gtceu.bronze_brick_casing", "Bricked Bronze Casing");
         replace(provider, "block.gtceu.steel_brick_casing", "Bricked Wrought Iron Casing");
@@ -66,7 +70,7 @@ public class BlockLang {
         replace(provider, "block.gtceu.steam_casing_bricked_steel", "Bricked Wrought Iron Hull");
         provider.add("block.gtceu.steam_casing_bricked_steel.tooltip", "§7For improved Steam Machines");
 
-        // GCyM Casings
+        // GCYM Casings
         replace(provider, "block.gtceu.laser_safe_engraving_casing", "Laser-Safe Engraving Casing");
         replace(provider, "block.gtceu.large_scale_assembler_casing", "Large-Scale Assembler Casing");
         replace(provider, "block.gtceu.reaction_safe_mixing_casing", "Reaction-Safe Mixing Casing");
