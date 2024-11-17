@@ -33,9 +33,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements IWorkable {
@@ -74,8 +75,9 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     public MagicEnergyAbsorberMachine(IMachineBlockEntity holder, int tier, Object... args) {
         this(holder, tier, 32, 4, args);
     }
-    
-    protected MagicEnergyAbsorberMachine(IMachineBlockEntity holder, int tier, long baseEUPerFeature, long amplifierMultiplier, Object... args) {
+
+    protected MagicEnergyAbsorberMachine(IMachineBlockEntity holder, int tier, long baseEUPerFeature,
+                                         long amplifierMultiplier, Object... args) {
         super(holder, tier, args);
         this.baseEUPerFeature = baseEUPerFeature;
         this.amplifierMultiplier = amplifierMultiplier;
