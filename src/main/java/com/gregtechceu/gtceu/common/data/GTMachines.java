@@ -569,7 +569,7 @@ public class GTMachines {
                     .rotationState(RotationState.NONE)
                     .langValue("%s Magic Energy Absorber %s".formatted(VLVH[tier], VLVT[tier]))
                     .renderer(() -> new WorkableTieredHullMachineRenderer(tier,
-                            GTCEu.id("block/casings/magic/absorber/active")))
+                            GTCEu.id("block/machines/magic_energy_absorber")))
                     .tooltips()
                     .compassNodeSelf()
                     .register(),
