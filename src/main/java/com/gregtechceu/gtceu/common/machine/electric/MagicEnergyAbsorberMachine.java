@@ -33,19 +33,28 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 
+@ParametersAreNonnullByDefault
 public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements IWorkable {
-
-    public static final long BASE_EU_PER_FEATURE = 32;
-    public static final long AMPLIFIER_MULTIPLIER = 4;
 
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
             MagicEnergyAbsorberMachine.class,
             TieredEnergyMachine.MANAGED_FIELD_HOLDER);
     private static final double DRAGON_DISTANCE_THRESHOLD = 5;
 
+    @DescSynced
+    @Persisted
+    @Getter
+    @Setter
+    protected long baseEUPerFeature;
+    @DescSynced
+    @Persisted
+    @Getter
+    @Setter
+    protected long amplifierMultiplier;
     @DescSynced
     @Persisted
     @Getter
@@ -63,7 +72,13 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     protected TickableSubscription onServerTickSubscription;
 
     public MagicEnergyAbsorberMachine(IMachineBlockEntity holder, int tier, Object... args) {
+        this(holder, tier, 32, 4, args);
+    }
+    
+    protected MagicEnergyAbsorberMachine(IMachineBlockEntity holder, int tier, long baseEUPerFeature, long amplifierMultiplier, Object... args) {
         super(holder, tier, args);
+        this.baseEUPerFeature = baseEUPerFeature;
+        this.amplifierMultiplier = amplifierMultiplier;
         this.isWorkingEnabled = true;
         this.connectedFeatures = new IntArrayList();
     }
@@ -120,7 +135,7 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
 
         if (connectedFeatures.isEmpty()) return;
 
-        long energyPer = BASE_EU_PER_FEATURE * (hasAmplifier ? AMPLIFIER_MULTIPLIER : 1);
+        long energyPer = this.baseEUPerFeature * (hasAmplifier ? this.amplifierMultiplier : 1);
         long energyGenerated = 0;
         // double check end crystals
         for (int i = 0; i < connectedFeatures.size(); i++) {
