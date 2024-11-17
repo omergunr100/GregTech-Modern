@@ -563,6 +563,18 @@ public class GTMachines {
                     .register(),
             LV, MV, HV, EV);
 
+    public static final MachineDefinition[] MAGIC_ENERGY_ABSORBER = registerTieredMachines("magic_energy_absorber",
+            MagicEnergyAbsorberMachine::new,
+            (tier, builder) -> builder
+                    .rotationState(RotationState.NONE)
+                    .langValue("%s Magic Energy Absorber %s".formatted(VLVH[tier], VLVT[tier]))
+                    .renderer(() -> new WorkableTieredHullMachineRenderer(tier,
+                            GTCEu.id("block/casings/magic/absorber/active")))
+                    .tooltips()
+                    .compassNode("magic_energy_absorber")
+                    .register(),
+            LV, MV, HV, EV);
+
     //////////////////////////////////////
     // ********* Storage *********//
     //////////////////////////////////////
