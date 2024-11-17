@@ -1,16 +1,19 @@
 package com.gregtechceu.gtceu.common.machine.electric;
 
-import com.gregtechceu.gtceu.api.capability.IControllable;
+import com.gregtechceu.gtceu.api.capability.IWorkable;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -21,6 +24,8 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.DragonEggBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -31,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements IControllable {
+public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements IWorkable {
 
     public static final long BASE_EU_PER_FEATURE = 32;
     public static final long AMPLIFIER_MULTIPLIER = 4;
@@ -39,6 +44,7 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
             MagicEnergyAbsorberMachine.class,
             TieredEnergyMachine.MANAGED_FIELD_HOLDER);
+    private static final double DRAGON_DISTANCE_THRESHOLD = 5;
 
     @DescSynced
     @Persisted
@@ -81,9 +87,13 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     public void onLoad() {
         super.onLoad();
         if (!isRemote()) {
-            onServerTickSubscription = this.subscribeServerTick(() -> onServerTick(false));
+            updateServerTickSubscription();
             onServerTick(true);
         }
+    }
+
+    protected void updateServerTickSubscription() {
+        onServerTickSubscription = this.subscribeServerTick(onServerTickSubscription, () -> onServerTick(false));
     }
 
     @Override
@@ -158,12 +168,18 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
         });
     }
 
+    protected void checkDragonProximity(EnderDragon dragon) {
+        if (getPos().getCenter().distanceTo(dragon.position()) < DRAGON_DISTANCE_THRESHOLD)
+            this.doExplosion(GTUtil.getExplosionPower(tier));
+    }
+
     protected void updateCrystalTargets() {
         if (getLevel() == null) return;
         // ender dragon check
         List<? extends EnderDragon> dragonsInRange = ((ServerLevel) getLevel()).getDragons();
 
         for (EnderDragon dragon : dragonsInRange) {
+            checkDragonProximity(dragon);
             if (dragon.nearestCrystal != null && connectedFeatures.contains(dragon.nearestCrystal.getId())) {
                 dragon.nearestCrystal = null;
 
@@ -171,7 +187,7 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
                     dragon.hurt(dragon.damageSources().explosion(dragon, dragon), 10.0f);
                     dragon.getPhaseManager().setPhase(EnderDragonPhase.CHARGING_PLAYER);
                     ((DragonChargePlayerPhase) dragon.getPhaseManager().getCurrentPhase())
-                            .setTarget(getPos().getCenter());
+                            .setTarget(getPos().below().below().getCenter());
                 }
             }
         }
@@ -193,5 +209,32 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
         }
 
         connectedFeatures.clear();
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void animateTick(RandomSource random) {
+        if (getLevel() == null || !isActive() || this.hasAmplifier) return;
+        BlockPos pos = getPos();
+        for (int i = 0; i < 4; i++) {
+            getLevel().addParticle(ParticleTypes.PORTAL, pos.getX(), pos.getY(), pos.getZ(),
+                    (random.nextFloat() - 0.5f) * 0.5f, (random.nextFloat() - 0.5f) * 0.5f,
+                    (random.nextFloat() - 0.5f) * 0.5f);
+        }
+    }
+
+    @Override
+    public int getProgress() {
+        return 1;
+    }
+
+    @Override
+    public int getMaxProgress() {
+        return 1;
+    }
+
+    @Override
+    public boolean isActive() {
+        return isWorkingEnabled() && !connectedFeatures.isEmpty();
     }
 }
