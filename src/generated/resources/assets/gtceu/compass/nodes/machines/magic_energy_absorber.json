@@ -1,0 +1,18 @@
+{
+  "button_texture": {
+    "type": "item",
+    "res": "gtceu:lv_magic_energy_absorber"
+  },
+  "items": [
+    "gtceu:lv_magic_energy_absorber",
+    "gtceu:mv_magic_energy_absorber",
+    "gtceu:hv_magic_energy_absorber",
+    "gtceu:ev_magic_energy_absorber"
+  ],
+  "page": "gtceu:machines/magic_energy_absorber",
+  "position": [
+    -100,
+    300
+  ],
+  "section": "gtceu:machines"
+}
