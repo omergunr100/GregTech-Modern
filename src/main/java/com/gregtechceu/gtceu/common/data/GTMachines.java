@@ -573,7 +573,7 @@ public class GTMachines {
                     .tooltips()
                     .compassNode("magic_energy_absorber")
                     .register(),
-            LV, MV, HV, EV);
+            EV);
 
     //////////////////////////////////////
     // ********* Storage *********//
