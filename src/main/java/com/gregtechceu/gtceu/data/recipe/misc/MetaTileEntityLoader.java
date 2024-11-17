@@ -837,6 +837,8 @@ public class MetaTileEntityLoader {
                 CIRCUIT, 'W', CABLE, 'S', Tags.Items.CHESTS_WOODEN, 'G', GRINDER);
         registerMachineRecipe(provider, GTMachines.MINER, "MMM", "WHW", "CSC", 'M', MOTOR, 'W', CABLE, 'H', HULL, 'C',
                 CIRCUIT, 'S', SENSOR);
+        registerMachineRecipe(provider, GTMachines.MAGIC_ENERGY_ABSORBER, "PCP", "PMP", "PCP", 'M', HULL, 'P', SENSOR,
+                'C', CIRCUIT);
 
         registerMachineRecipe(provider, GTMachines.MUFFLER_HATCH, "HM", "PR", 'H', HULL, 'M', MOTOR, 'P', PIPE_NORMAL,
                 'R', ROTOR);

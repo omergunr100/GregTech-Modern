@@ -571,7 +571,7 @@ public class GTMachines {
                     .renderer(() -> new WorkableTieredHullMachineRenderer(tier,
                             GTCEu.id("block/casings/magic/absorber/active")))
                     .tooltips()
-                    .compassNode("magic_energy_absorber")
+                    .compassNodeSelf()
                     .register(),
             EV);
 
