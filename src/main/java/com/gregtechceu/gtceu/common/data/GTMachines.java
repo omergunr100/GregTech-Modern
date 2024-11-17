@@ -567,7 +567,7 @@ public class GTMachines {
             MagicEnergyAbsorberMachine::new,
             (tier, builder) -> builder
                     .rotationState(RotationState.NONE)
-                    .langValue("%s Magic Energy Absorber %s".formatted(VLVH[tier], VLVT[tier]))
+                    .langValue("Magic Energy Absorber")
                     .renderer(() -> new WorkableTieredHullMachineRenderer(tier,
                             GTCEu.id("block/machines/magic_energy_absorber")))
                     .tooltips()
