@@ -152,7 +152,8 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
                 .map(spike -> getLevel().getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox(),
                         crystal -> crystal.distanceToSqr(getPos().getCenter()) < maxDistance))
                 .reduce(new ArrayList<>(), (lst, crystalList) -> {
-                    lst.addAll(crystalList);
+                    if (!crystalList.isEmpty())
+                        lst.add(crystalList.get(0));
                     return lst;
                 });
 
