@@ -728,6 +728,9 @@ public class LangHandler {
         provider.add("behaviour.paintspray.black.tooltip", "Can paint things in Black");
         provider.add("behaviour.paintspray.uses", "Remaining Uses: %d");
         provider.add("behaviour.prospecting", "Usable for Prospecting");
+        provider.add("behaviour.meta.machine.config.copy.tooltip",
+                "Sneak + R-Click to copy machine configuration (on air to clear saved configuration)");
+        provider.add("behaviour.meta.machine.config.paste.tooltip", "R-Click to paste machine configuration");
         provider.add("enchantment.damage.disjunction", "Disjunction");
         provider.add("enchantment.gtceu.disjunction.description",
                 "Applies Weakness and Slowness to Ender-related mobs.");
