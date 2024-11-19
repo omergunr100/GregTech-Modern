@@ -95,7 +95,7 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
 
     @Override
     protected long getMaxInputOutputAmperage() {
-        return 4;
+        return 1;
     }
 
     @Override
