@@ -8,6 +8,7 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 
 import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib.syncdata.annotation.RequireRerender;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
 import net.minecraft.core.BlockPos;
@@ -60,14 +61,12 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     @Persisted
     @Getter
     @Setter
-    protected boolean isWorkingEnabled;
-    @DescSynced
-    @Persisted
-    @Getter
-    @Setter
     protected boolean hasAmplifier;
     @Getter
     protected IntList connectedFeatures;
+    @DescSynced
+    @RequireRerender
+    protected int numFeatures;
 
     // subscriptions
     protected TickableSubscription onServerTickSubscription;
@@ -81,7 +80,6 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
         super(holder, tier, args);
         this.baseEUPerFeature = baseEUPerFeature;
         this.amplifierMultiplier = amplifierMultiplier;
-        this.isWorkingEnabled = true;
         this.connectedFeatures = new IntArrayList();
     }
 
@@ -184,6 +182,7 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
                 this.connectedFeatures.add(endCrystal.getId());
             }
         });
+        numFeatures = this.connectedFeatures.size();
     }
 
     protected void checkDragonProximity(EnderDragon dragon) {
@@ -253,6 +252,14 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
 
     @Override
     public boolean isActive() {
-        return isWorkingEnabled() && !connectedFeatures.isEmpty();
+        return numFeatures > 0;
     }
+
+    @Override
+    public boolean isWorkingEnabled() {
+        return true;
+    }
+
+    @Override
+    public void setWorkingEnabled(boolean isWorkingAllowed) {}
 }
