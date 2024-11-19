@@ -568,8 +568,7 @@ public class GTMachines {
             (tier, builder) -> builder
                     .rotationState(RotationState.NONE)
                     .langValue("Magic Energy Absorber")
-                    .sidedWorkableCasingRenderer("block/machines/magic_energy_absorber/normal",
-                            GTCEu.id("block/machines/magic_energy_absorber/active"))
+                    .workableTieredHullRenderer(GTCEu.id("block/machines/magic_energy_absorber"))
                     .tooltips(LangHandler.getFromMultiLang("gtceu.machine.magic_energy_absorber.tooltip", 0),
                             LangHandler.getFromMultiLang("gtceu.machine.magic_energy_absorber.tooltip", 1),
                             LangHandler.getFromMultiLang("gtceu.machine.magic_energy_absorber.tooltip", 2),
