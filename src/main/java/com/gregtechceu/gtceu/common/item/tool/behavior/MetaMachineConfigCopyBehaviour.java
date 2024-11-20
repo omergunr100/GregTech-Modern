@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IMufflableMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.config.ConfigHolder;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -124,7 +125,7 @@ public class MetaMachineConfigCopyBehaviour implements IInteractionItem, IAddInf
         if (machine instanceof IMufflableMachine mufflableMachine) {
             mufflableMachine.setMuffled(configData.getBoolean(MUFFLED));
         }
-		if (machine instanceof SimpleTieredMachine stm) {
+		if (machine instanceof SimpleTieredMachine stm && ConfigHolder.INSTANCE.machines.ghostCircuit) {
 			stm.getCircuitInventory().setStackInSlot(0, IntCircuitBehaviour.stack(configData.getInt(CIRCUIT)));
 		}
         return InteractionResult.SUCCESS;
