@@ -47,17 +47,14 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
             TieredEnergyMachine.MANAGED_FIELD_HOLDER);
     private static final double DRAGON_DISTANCE_THRESHOLD = 5;
 
-    @DescSynced
     @Persisted
     @Getter
     @Setter
     protected long baseEUPerFeature;
-    @DescSynced
     @Persisted
     @Getter
     @Setter
     protected long amplifierMultiplier;
-    @DescSynced
     @Persisted
     @Getter
     @Setter
@@ -67,6 +64,12 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     @DescSynced
     @RequireRerender
     protected int numFeatures;
+    @Getter
+    @Setter
+    @Persisted
+    @DescSynced
+    @RequireRerender
+    protected boolean workingEnabled = true;
 
     // subscriptions
     protected TickableSubscription onServerTickSubscription;
@@ -122,18 +125,26 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     }
 
     protected void onServerTick(boolean force) {
-        if (!(getLevel() instanceof ServerLevel serverLevel) || serverLevel.dimension() != Level.END) return;
+        if (!workingEnabled || !(getLevel() instanceof ServerLevel serverLevel) ||
+                serverLevel.dimension() != Level.END) {
+            return;
+        }
 
-        if (force || getOffsetTimer() % 20 == 0)
+        if (force || getOffsetTimer() % 20 == 0) {
             updateAmplifierStatus();
+        }
 
-        if (force || getOffsetTimer() % 200 == 0)
+        if (force || getOffsetTimer() % 200 == 0) {
             updateConnectedFeatures();
+        }
 
-        if (force || !serverLevel.getDragons().isEmpty())
+        if (force || !serverLevel.getDragons().isEmpty()) {
             updateCrystalTargets();
+        }
 
-        if (connectedFeatures.isEmpty()) return;
+        if (connectedFeatures.isEmpty()) {
+            return;
+        }
 
         long energyPer = this.baseEUPerFeature * (hasAmplifier ? this.amplifierMultiplier : 1);
         long energyGenerated = 0;
@@ -143,8 +154,9 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
                 energyGenerated += energyPer;
         }
 
-        if (energyGenerated > 0)
+        if (energyGenerated > 0) {
             energyContainer.changeEnergy(energyGenerated);
+        }
     }
 
     protected void updateAmplifierStatus() {
@@ -159,7 +171,9 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
 
     protected void updateConnectedFeatures() {
         this.connectedFeatures.clear();
-        if (getLevel() == null) return;
+        if (getLevel() == null) {
+            return;
+        }
 
         // get all natural end crystals
         final double maxDistance = 4096; // (64^2)
@@ -175,9 +189,9 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
         // set end crystals beam target to this generator
         endCrystals.forEach(endCrystal -> {
             BlockPos beamTarget = endCrystal.getBeamTarget();
-            if (getPos().equals(beamTarget))
+            if (getPos().equals(beamTarget)) {
                 this.connectedFeatures.add(endCrystal.getId());
-            else if (beamTarget == null) {
+            } else if (beamTarget == null) {
                 endCrystal.setBeamTarget(getPos());
                 this.connectedFeatures.add(endCrystal.getId());
             }
@@ -186,12 +200,15 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     }
 
     protected void checkDragonProximity(EnderDragon dragon) {
-        if (getPos().getCenter().distanceTo(dragon.position()) < DRAGON_DISTANCE_THRESHOLD)
+        if (getPos().getCenter().distanceTo(dragon.position()) < DRAGON_DISTANCE_THRESHOLD) {
             this.doExplosion(GTUtil.getExplosionPower(tier));
+        }
     }
 
     protected void updateCrystalTargets() {
-        if (getLevel() == null) return;
+        if (getLevel() == null) {
+            return;
+        }
         // ender dragon check
         List<? extends EnderDragon> dragonsInRange = ((ServerLevel) getLevel()).getDragons();
 
@@ -204,7 +221,7 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
                     dragon.hurt(dragon.damageSources().explosion(dragon, dragon), 10.0f);
                     dragon.getPhaseManager().setPhase(EnderDragonPhase.CHARGING_PLAYER);
                     ((DragonChargePlayerPhase) dragon.getPhaseManager().getCurrentPhase())
-                            .setTarget(getPos().below().below().getCenter());
+                            .setTarget(getPos().below(2).getCenter());
                 }
             }
         }
@@ -219,10 +236,13 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
         for (int id : connectedFeatures) {
             Entity entity = getLevel().getEntity(id);
 
-            if (!(entity instanceof EndCrystal endCrystal)) continue;
+            if (!(entity instanceof EndCrystal endCrystal)) {
+                continue;
+            }
 
-            if (getPos().equals(endCrystal.getBeamTarget()))
+            if (getPos().equals(endCrystal.getBeamTarget())) {
                 endCrystal.setBeamTarget(null);
+            }
         }
 
         connectedFeatures.clear();
@@ -231,7 +251,9 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
     @Override
     @SideOnly(Side.CLIENT)
     public void animateTick(RandomSource random) {
-        if (getLevel() == null || !isActive() || this.hasAmplifier) return;
+        if (getLevel() == null || !isActive() || this.hasAmplifier) {
+            return;
+        }
         BlockPos pos = getPos();
         for (int i = 0; i < 4; i++) {
             getLevel().addParticle(ParticleTypes.PORTAL, pos.getX(), pos.getY(), pos.getZ(),
@@ -252,14 +274,6 @@ public class MagicEnergyAbsorberMachine extends TieredEnergyMachine implements I
 
     @Override
     public boolean isActive() {
-        return numFeatures > 0;
+        return isWorkingEnabled() && numFeatures > 0;
     }
-
-    @Override
-    public boolean isWorkingEnabled() {
-        return true;
-    }
-
-    @Override
-    public void setWorkingEnabled(boolean isWorkingAllowed) {}
 }
