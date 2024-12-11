@@ -3,13 +3,14 @@ package com.gregtechceu.gtceu.integration.rei;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
-import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
+import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.integration.rei.circuit.GTProgrammedCircuitCategory;
 import com.gregtechceu.gtceu.integration.rei.multipage.MultiblockInfoDisplayCategory;
 import com.gregtechceu.gtceu.integration.rei.oreprocessing.GTOreProcessingDisplayCategory;
 import com.gregtechceu.gtceu.integration.rei.orevein.GTBedrockFluidDisplayCategory;
@@ -26,6 +27,7 @@ import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.entry.CollapsibleEntryRegistry;
+import me.shedaniel.rei.api.common.entry.comparison.ItemComparatorRegistry;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.forge.REIPluginClient;
@@ -33,8 +35,6 @@ import me.shedaniel.rei.forge.REIPluginClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import static me.shedaniel.rei.plugin.common.BuiltinPlugin.SMELTING;
 
 /**
  * @author KilaBash
@@ -46,6 +46,7 @@ public class GTREIPlugin implements REIClientPlugin {
 
     @Override
     public void registerCategories(CategoryRegistry registry) {
+        // Categories
         registry.add(new MultiblockInfoDisplayCategory());
         if (!ConfigHolder.INSTANCE.compat.hideOreProcessingDiagrams)
             registry.add(new GTOreProcessingDisplayCategory());
@@ -58,7 +59,9 @@ public class GTREIPlugin implements REIClientPlugin {
                 registry.add(new GTRecipeREICategory(category));
             }
         }
-        // workstations
+        registry.add(new GTProgrammedCircuitCategory());
+
+        // Workstations
         GTRecipeREICategory.registerWorkStations(registry);
         if (!ConfigHolder.INSTANCE.compat.hideOreProcessingDiagrams)
             GTOreProcessingDisplayCategory.registerWorkstations(registry);
@@ -66,17 +69,7 @@ public class GTREIPlugin implements REIClientPlugin {
         GTBedrockFluidDisplayCategory.registerWorkstations(registry);
         if (ConfigHolder.INSTANCE.machines.doBedrockOres)
             GTBedrockOreDisplayCategory.registerWorkstations(registry);
-        for (MachineDefinition definition : GTMachines.ELECTRIC_FURNACE) {
-            if (definition != null) {
-                registry.addWorkstations(SMELTING, EntryStacks.of(definition.asStack()));
-            }
-        }
-        registry.addWorkstations(SMELTING, EntryStacks.of(GTMachines.STEAM_FURNACE.left().asStack()));
-        registry.addWorkstations(SMELTING, EntryStacks.of(GTMachines.STEAM_FURNACE.right().asStack()));
-        registry.addWorkstations(SMELTING, EntryStacks.of(GTMachines.STEAM_OVEN.asStack()));
-        registry.addWorkstations(SMELTING, EntryStacks.of(GTMachines.MULTI_SMELTER.asStack()));
-        registry.addWorkstations(
-                GTRecipeREICategory.CATEGORIES.apply(GTRecipeCategory.of(GTRecipeTypes.CHEMICAL_RECIPES)),
+        registry.addWorkstations(GTRecipeREICategory.CATEGORIES.apply(GTRecipeTypes.CHEMICAL_RECIPES.getCategory()),
                 EntryStacks.of(GTMachines.LARGE_CHEMICAL_REACTOR.asStack()));
     }
 
@@ -90,6 +83,7 @@ public class GTREIPlugin implements REIClientPlugin {
         GTBedrockFluidDisplayCategory.registerDisplays(registry);
         if (ConfigHolder.INSTANCE.machines.doBedrockOres)
             GTBedrockOreDisplayCategory.registerDisplays(registry);
+        registry.add(new GTProgrammedCircuitCategory.GTProgrammedCircuitDisplay());
     }
 
     @Override
@@ -123,6 +117,11 @@ public class GTREIPlugin implements REIClientPlugin {
             registry.group(GTCEu.id("ore/" + name), Component.translatable("tagprefix.stone", label),
                     EntryIngredients.ofItems(items));
         }
+    }
+
+    @Override
+    public void registerItemComparators(ItemComparatorRegistry registry) {
+        registry.registerNbt(GTItems.PROGRAMMED_CIRCUIT.asItem());
     }
 
     private static String toUpperAllWords(String text) {

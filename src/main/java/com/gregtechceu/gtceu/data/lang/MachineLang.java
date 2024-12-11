@@ -60,8 +60,8 @@ public class MachineLang {
         // Ones done with more unique tooltips are first /
         ///////////////////////////////////////////////////
 
-        provider.add("gtceu.machine.lv_macerator.tooltip", "§7Shredding your Ores");
-        provider.add("gtceu.machine.mv_macerator.tooltip", "§7Shredding your Ores");
+        provider.add("gtceu.machine.lv_macerator.tooltip", "§7Shredding your Ores without Byproducts");
+        provider.add("gtceu.machine.mv_macerator.tooltip", "§7Shredding your Ores without Byproducts");
         provider.add("gtceu.machine.hv_macerator.tooltip", "§7Shredding your Ores with Byproducts");
         provider.add("gtceu.machine.ev_macerator.tooltip", "§7Shredding your Ores with Byproducts");
         provider.add("gtceu.machine.iv_macerator.tooltip", "§7Blend-O-Matic 9001");
@@ -404,6 +404,11 @@ public class MachineLang {
         provider.add("gtceu.machine.world_accelerator.working_area_random", "  Random Tick Mode:§f %dx%d");
         provider.add("gtceu.machine.world_accelerator.mode_tile", "Block Entity Mode");
         provider.add("gtceu.machine.world_accelerator.mode_entity", "Random Tick Mode");
+
+        // Forming Press
+        provider.add("gtceu.forming_press.naming.press", "§oNamed Press");
+        provider.add("gtceu.forming_press.naming.to_name", "§oItem to Name");
+        provider.add("gtceu.forming_press.naming.named", "§oNamed Item");
 
         // magic energy absorber
         provider.add("gtceu.machine.magic_energy_absorber.name", "Magic Energy Absorber");

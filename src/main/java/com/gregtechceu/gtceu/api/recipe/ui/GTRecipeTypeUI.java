@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
+import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
 import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
 import com.gregtechceu.gtceu.integration.jei.recipe.GTRecipeJEICategory;
 import com.gregtechceu.gtceu.integration.rei.recipe.GTRecipeREICategory;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.DoubleSupplier;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("UnusedReturnValue")
 public class GTRecipeTypeUI {
@@ -83,10 +85,6 @@ public class GTRecipeTypeUI {
     @Setter
     @Getter
     protected int maxTooltips = 3;
-
-    @Getter
-    @Setter
-    private boolean XEIVisible = true;
 
     private CompoundTag customUICache;
     private Size xeiSize;
@@ -247,18 +245,21 @@ public class GTRecipeTypeUI {
                             widget.getSize().width, widget.getSize().height, IGuiTexture.EMPTY, cd -> {
                                 if (cd.isRemote) {
                                     if (LDLib.isReiLoaded()) {
-                                        recipeType.getRecipesByCategory().keySet()
-                                                .forEach(e -> ViewSearchBuilder.builder()
-                                                        .addCategory(GTRecipeREICategory.CATEGORIES.apply(e)).open());
+                                        ViewSearchBuilder.builder().addCategories(
+                                                recipeType.getCategories().stream()
+                                                        .filter(GTRecipeCategory::isXEIVisible)
+                                                        .map(GTRecipeREICategory::machineCategory)
+                                                        .collect(Collectors.toList()))
+                                                .open();
                                     } else if (LDLib.isJeiLoaded()) {
-                                        JEIPlugin.jeiRuntime.getRecipesGui()
-                                                .showTypes(new ArrayList<>(recipeType.getRecipesByCategory().keySet()
-                                                        .stream().map(GTRecipeJEICategory.TYPES).toList()));
+                                        JEIPlugin.jeiRuntime.getRecipesGui().showTypes(
+                                                recipeType.getCategories().stream()
+                                                        .filter(GTRecipeCategory::isXEIVisible)
+                                                        .map(GTRecipeJEICategory::machineType)
+                                                        .collect(Collectors.toList()));
                                     } else if (LDLib.isEmiLoaded()) {
-                                        recipeType.getRecipesByCategory().keySet()
-                                                .forEach(e -> EmiApi
-                                                        .displayRecipeCategory(
-                                                                GTRecipeEMICategory.CATEGORIES.apply(e)));
+                                        EmiApi.displayRecipeCategory(
+                                                GTRecipeEMICategory.machineCategory(recipeType.getCategory()));
                                     }
                                 }
                             }).setHoverTooltips("gtceu.recipe_type.show_recipes"));

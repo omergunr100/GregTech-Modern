@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.common.data.GTRecipeCategories;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
@@ -28,8 +27,6 @@ import com.mojang.datafixers.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 
 public final class ResearchManager {
@@ -195,26 +192,26 @@ public final class ResearchManager {
                     .inputItems(first)
                     .notConsumable(second)
                     .outputItems(output)
-                    .duration(DURATION).EUt(EUT).buildRawRecipe();
+                    .duration(DURATION).EUt(EUT)
+                    .buildRawRecipe();
         }
 
-        @Nullable
         @Override
-        public List<GTRecipe> getRepresentativeRecipes() {
+        public void buildRepresentativeRecipes() {
             ItemStack copiedStick = GTItems.TOOL_DATA_STICK.asStack();
             copiedStick.setHoverName(Component.translatable("gtceu.scanner.copy_stick_from"));
             ItemStack emptyStick = GTItems.TOOL_DATA_STICK.asStack();
             emptyStick.setHoverName(Component.translatable("gtceu.scanner.copy_stick_empty"));
             ItemStack resultStick = GTItems.TOOL_DATA_STICK.asStack();
             resultStick.setHoverName(Component.translatable("gtceu.scanner.copy_stick_to"));
-            return Collections.singletonList(
-                    GTRecipeTypes.SCANNER_RECIPES.recipeBuilder("copy_" + GTStringUtils.itemStackToString(copiedStick))
-                            .inputItems(emptyStick)
-                            .notConsumable(copiedStick)
-                            .outputItems(resultStick)
-                            .duration(DURATION).EUt(EUT)
-                            .category(GTRecipeCategories.DUMMY)
-                            .buildRawRecipe());
+            var recipe = GTRecipeTypes.SCANNER_RECIPES
+                    .recipeBuilder("copy_" + GTStringUtils.itemStackToString(copiedStick))
+                    .inputItems(emptyStick)
+                    .notConsumable(copiedStick)
+                    .outputItems(resultStick)
+                    .duration(DURATION).EUt(EUT)
+                    .buildRawRecipe();
+            GTRecipeTypes.SCANNER_RECIPES.addToMainCategory(recipe);
         }
     }
 }
