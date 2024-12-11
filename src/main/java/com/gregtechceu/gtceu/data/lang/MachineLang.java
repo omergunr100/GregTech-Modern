@@ -408,7 +408,7 @@ public class MachineLang {
         // magic energy absorber
         provider.add("gtceu.machine.magic_energy_absorber.name", "Magic Energy Absorber");
         multilineLang(provider, "gtceu.machine.magic_energy_absorber.tooltip",
-                "Max Voltage OUT: §a2048 §7(§5EV§7)\nCollects energy from end crystals on naturally generated obsidian pillars in the End within 64 blocks.\nEach ender crystal adds 32 EU/t to output\nPlace Dragon Egg on top to amplify output\n\nWhen amplified:\nEach ender crystal adds 128 EU/t");
+                "\n§7Collects energy from §bEnd Crystals§r §7on naturally generated obsidian pillars in the End within §r64§7 blocks.\n§7Each §bEnd Crystal§r §7adds §r32 EU/t§7 to output\n§7Place §dDragon Egg§r §7on top to amplify output\n\n§7When amplified:\n§7Each §bEnd Crystal§r §7adds §r128 EU/t");
 
         // Scanner
         provider.add("gtceu.scanner.copy_stick_from", "§oStick to Copy");
