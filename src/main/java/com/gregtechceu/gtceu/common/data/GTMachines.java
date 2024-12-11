@@ -566,7 +566,6 @@ public class GTMachines {
                             LangHandler.getFromMultiLang("gtceu.machine.magic_energy_absorber.tooltip", 4),
                             LangHandler.getFromMultiLang("gtceu.machine.magic_energy_absorber.tooltip", 5),
                             LangHandler.getFromMultiLang("gtceu.machine.magic_energy_absorber.tooltip", 6))
-                    .compassNodeSelf()
                     .register(),
             EV);
 
