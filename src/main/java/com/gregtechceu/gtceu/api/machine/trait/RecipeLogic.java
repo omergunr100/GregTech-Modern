@@ -9,8 +9,6 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.logic.OCParams;
-import com.gregtechceu.gtceu.api.recipe.logic.OCResult;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.sound.AutoReleasedSound;
 import com.gregtechceu.gtceu.config.ConfigHolder;
@@ -77,8 +75,12 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
     @Persisted
     @DescSynced
     protected GTRecipe lastRecipe;
+    @Getter
+    @Persisted
+    @DescSynced
+    protected int consecutiveRecipes = 0; // Consecutive recipes that have been run
     /**
-     * safe, it is the origin recipe before {@link IRecipeLogicMachine#fullModifyRecipe(GTRecipe, OCParams, OCResult)}'
+     * safe, it is the origin recipe before {@link IRecipeLogicMachine#fullModifyRecipe(GTRecipe)}'
      * which can be found
      * from {@link RecipeManager}.
      */
@@ -86,8 +88,6 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
     @Getter
     @Persisted
     protected GTRecipe lastOriginRecipe;
-    protected OCParams ocParams = new OCParams();
-    protected OCResult ocResult = new OCResult();
     @Persisted
     @Getter
     @Setter
@@ -143,6 +143,7 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
         recipeDirty = false;
         lastRecipe = null;
         lastOriginRecipe = null;
+        consecutiveRecipes = 0;
         progress = 0;
         duration = 0;
         isActive = false;
@@ -150,7 +151,6 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
         lastFailedMatches = null;
         if (status != Status.SUSPEND)
             status = Status.IDLE;
-        ocResult.reset();
         updateTickSubscription();
     }
 
@@ -229,7 +229,7 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
 
     public boolean checkMatchedRecipeAvailable(GTRecipe match) {
         var matchCopy = match.copy();
-        var modified = machine.fullModifyRecipe(matchCopy, ocParams, ocResult);
+        var modified = machine.fullModifyRecipe(matchCopy);
         if (modified != null) {
             if (modified.checkConditions(this).isSuccess() &&
                     modified.matchRecipe(machine).isSuccess() &&
@@ -363,6 +363,7 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
         if (handleFuelRecipe()) {
             if (!machine.beforeWorking(recipe)) {
                 setStatus(Status.IDLE);
+                consecutiveRecipes = 0;
                 progress = 0;
                 duration = 0;
                 isActive = false;
@@ -373,7 +374,6 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
                 if (lastRecipe != null && !recipe.equals(lastRecipe)) {
                     chanceCaches.clear();
                 }
-
                 recipeDirty = false;
                 lastRecipe = recipe;
                 setStatus(Status.WORKING);
@@ -462,11 +462,12 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
     public void onRecipeFinish() {
         machine.afterWorking();
         if (lastRecipe != null) {
+            consecutiveRecipes++;
             lastRecipe.postWorking(this.machine);
             handleRecipeIO(lastRecipe, IO.OUT);
             if (machine.alwaysTryModifyRecipe()) {
                 if (lastOriginRecipe != null) {
-                    var modified = machine.fullModifyRecipe(lastOriginRecipe.copy(), ocParams, ocResult);
+                    var modified = machine.fullModifyRecipe(lastOriginRecipe.copy());
                     if (modified == null) {
                         markLastRecipeDirty();
                     } else {
@@ -489,6 +490,7 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
                 } else {
                     setStatus(Status.IDLE);
                 }
+                consecutiveRecipes = 0;
                 progress = 0;
                 duration = 0;
                 isActive = false;
@@ -514,7 +516,6 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
             setStatus(Status.IDLE);
             progress = 0;
             duration = 0;
-            ocResult.reset();
         }
     }
 
@@ -609,13 +610,13 @@ public class RecipeLogic extends MachineTrait implements IEnhancedManaged, IWork
         CompoundTag chanceCache = tag.getCompound("chance_cache");
         for (String key : chanceCache.getAllKeys()) {
             RecipeCapability<?> cap = GTRegistries.RECIPE_CAPABILITIES.get(key);
-            // noinspection DataFlowIssue,rawtypes
-            Object2IntMap map = this.chanceCaches.computeIfAbsent(cap, val -> val.makeChanceCache());
+            if (cap == null) continue; // Necessary since we removed a RecipeCapability when nuking Create
+            // noinspection rawtypes
+            Object2IntMap map = this.chanceCaches.computeIfAbsent(cap, RecipeCapability::makeChanceCache);
 
             ListTag chanceTag = chanceCache.getList(key, Tag.TAG_COMPOUND);
             for (int i = 0; i < chanceTag.size(); ++i) {
                 CompoundTag chanceKey = chanceTag.getCompound(i);
-                // noinspection DataFlowIssue
                 var entry = cap.serializer.fromNbt(chanceKey.get("entry"));
                 int value = chanceKey.getInt("cached_chance");
                 // noinspection unchecked
