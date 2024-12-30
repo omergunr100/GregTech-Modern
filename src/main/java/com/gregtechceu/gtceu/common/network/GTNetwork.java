@@ -27,7 +27,6 @@ public class GTNetwork {
         NETWORK.registerS2C(SPacketRemoveHazardZone.class);
         NETWORK.registerS2C(SPacketSyncHazardZoneStrength.class);
         NETWORK.registerS2C(SPacketSyncLevelHazards.class);
-        NETWORK.registerS2C(SPacketOreProspect.class);
         NETWORK.registerS2C(SPacketProspectOre.class);
         NETWORK.registerS2C(SPacketProspectBedrockFluid.class);
         NETWORK.registerS2C(SPacketProspectBedrockOre.class);
