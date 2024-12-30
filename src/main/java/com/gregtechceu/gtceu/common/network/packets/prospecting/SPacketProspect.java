@@ -18,24 +18,31 @@ public abstract class SPacketProspect<T> implements IPacket {
 
     protected final Table<ResourceKey<Level>, BlockPos, T> data;
 
-    public SPacketProspect() {
+    protected SPacketProspect() {
         data = HashBasedTable.create();
     }
 
-    public SPacketProspect(Table<ResourceKey<Level>, BlockPos, T> data) {
+    protected SPacketProspect(Table<ResourceKey<Level>, BlockPos, T> data) {
         this.data = data;
     }
 
-    public SPacketProspect(Collection<ResourceKey<Level>> keys, Collection<BlockPos> positions,
-                           Collection<T> prospected) {
-        data = HashBasedTable.create();
+    protected SPacketProspect(Collection<ResourceKey<Level>> keys, Collection<BlockPos> positions,
+                              Collection<T> prospected) {
+        this();
         var keyIterator = keys.iterator();
         var posIterator = positions.iterator();
         var prospectedIterator = prospected.iterator();
-
-        assert keys.size() == positions.size() && keys.size() == prospected.size();
         while (keyIterator.hasNext()) {
             data.put(keyIterator.next(), posIterator.next(), prospectedIterator.next());
+        }
+    }
+
+    protected SPacketProspect(ResourceKey<Level> key, Collection<BlockPos> positions, Collection<T> prospected) {
+        data = HashBasedTable.create(1, prospected.size());
+        var posIterator = positions.iterator();
+        var prospectedIterator = prospected.iterator();
+        while (posIterator.hasNext()) {
+            data.put(key, posIterator.next(), prospectedIterator.next());
         }
     }
 
