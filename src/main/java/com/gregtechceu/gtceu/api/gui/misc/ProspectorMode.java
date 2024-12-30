@@ -172,20 +172,20 @@ public abstract class ProspectorMode<T> {
         @Getter
         @Setter
         private int left;
-        
+
         public void toBuffer(FriendlyByteBuf buf) {
             buf.writeResourceLocation(BuiltInRegistries.FLUID.getKey(fluid));
             buf.writeInt(yield);
             buf.writeInt(left);
         }
-        
+
         public static FluidInfo fromBuffer(FriendlyByteBuf buf) {
             var fluid = BuiltInRegistries.FLUID.get(buf.readResourceLocation());
             var yield = buf.readInt();
             var left = buf.readInt();
             return new FluidInfo(fluid, yield, left);
         }
-        
+
         public static FluidInfo fromNbt(CompoundTag tag) {
             Fluid fluid = BuiltInRegistries.FLUID.get(new ResourceLocation(tag.getString("fluid")));
             int left = tag.getInt("left");
