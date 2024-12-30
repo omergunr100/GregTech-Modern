@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.BedrockFluidVeinSave
 import com.gregtechceu.gtceu.api.data.worldgen.bedrockore.BedrockOreVeinSavedData;
 import com.gregtechceu.gtceu.api.gui.texture.ProspectingTexture;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.common.unification.material.MaterialRegistryManager;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -171,7 +172,20 @@ public abstract class ProspectorMode<T> {
         @Getter
         @Setter
         private int left;
-
+        
+        public void toBuffer(FriendlyByteBuf buf) {
+            buf.writeResourceLocation(BuiltInRegistries.FLUID.getKey(fluid));
+            buf.writeInt(yield);
+            buf.writeInt(left);
+        }
+        
+        public static FluidInfo fromBuffer(FriendlyByteBuf buf) {
+            var fluid = BuiltInRegistries.FLUID.get(buf.readResourceLocation());
+            var yield = buf.readInt();
+            var left = buf.readInt();
+            return new FluidInfo(fluid, yield, left);
+        }
+        
         public static FluidInfo fromNbt(CompoundTag tag) {
             Fluid fluid = BuiltInRegistries.FLUID.get(new ResourceLocation(tag.getString("fluid")));
             int left = tag.getInt("left");
@@ -278,6 +292,20 @@ public abstract class ProspectorMode<T> {
 
     public record OreInfo(Material material, int weight, int left, int yield) {
 
+        public void toBuffer(FriendlyByteBuf buf) {
+            buf.writeResourceLocation(material.getResourceLocation());
+            buf.writeInt(weight);
+            buf.writeInt(left);
+            buf.writeInt(yield);
+        }
+
+        public static OreInfo fromBuffer(FriendlyByteBuf buf) {
+            var material = MaterialRegistryManager.getInstance().getMaterial(buf.readResourceLocation().toString());
+            var weight = buf.readInt();
+            var left = buf.readInt();
+            var yield = buf.readInt();
+            return new OreInfo(material, weight, left, yield);
+        }
     }
 
     public static ProspectorMode<OreInfo> BEDROCK_ORE = new ProspectorMode<>("metaitem.prospector.mode.bedrock_ore",
