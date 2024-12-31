@@ -10,8 +10,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.HashSet;
-import java.util.Set;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+import java.util.List;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = GTCEu.MOD_ID)
 public class ProspectorHelper {
@@ -24,7 +25,7 @@ public class ProspectorHelper {
     private ChunkPos lastPos;
     private int offsetX, offsetZ;
 
-    private static final Set<ProspectorHelper> helpers = new HashSet<>();
+    private static final List<ProspectorHelper> helpers = new ObjectArrayList<>();
 
     public ProspectorHelper(ServerPlayer player, ItemStack prospector, int scanTickTime) {
         this.player = player;
