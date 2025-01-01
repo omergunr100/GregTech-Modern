@@ -46,6 +46,11 @@ public abstract class SPacketProspect<T> implements IPacket {
         }
     }
 
+    protected SPacketProspect(ResourceKey<Level> key, BlockPos position, T prospected) {
+        data = HashBasedTable.create(1, 1);
+        data.put(key, position, prospected);
+    }
+
     public abstract void encodeData(FriendlyByteBuf buf, T data);
 
     public abstract T decodeData(FriendlyByteBuf buf);

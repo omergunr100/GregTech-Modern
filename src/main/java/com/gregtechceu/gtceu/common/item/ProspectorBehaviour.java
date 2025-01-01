@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,9 +29,11 @@ import java.util.Objects;
 
 public class ProspectorBehaviour implements IInteractionItem, IAddInformation {
 
+    @Getter
     private final int radius;
     private final long cost;
     private final ProspectorMode<?>[] modes;
+    @Getter
     private final int scanTickTime;
 
     public ProspectorBehaviour(int radius, long cost, int scanTickTime, ProspectorMode<?>... modes) {
@@ -82,7 +85,7 @@ public class ProspectorBehaviour implements IInteractionItem, IAddInformation {
             return InteractionResultHolder.success(heldItem);
         }
         if (!level.isClientSide) {
-            new ProspectorHelper((ServerPlayer) player, heldItem, scanTickTime);
+            new ProspectorHelper((ServerPlayer) player, this, heldItem);
         }
         // todo: create a new ui and init here
         return IInteractionItem.super.use(item, level, player, usedHand);
