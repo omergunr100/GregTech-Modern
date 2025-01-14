@@ -70,7 +70,7 @@ public class QuantumChestRenderer extends TieredHullMachineRenderer {
             float tick = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
             // Don't need to handle locked items here since they don't get saved to the item
             renderChest(poseStack, buffer, Direction.NORTH, itemStack, storedAmount, tick, ItemStack.EMPTY,
-                    stack.is(CREATIVE_CHEST_ITEM), 33);
+                    stack.is(CREATIVE_CHEST_ITEM), 65);
 
             poseStack.popPose();
         }
