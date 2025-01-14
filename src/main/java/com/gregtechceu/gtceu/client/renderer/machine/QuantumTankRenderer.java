@@ -76,7 +76,7 @@ public class QuantumTankRenderer extends TieredHullMachineRenderer {
             long maxAmount = stack.getOrCreateTag().getLong("maxAmount");
             // Don't need to handle locked fluids here since they don't get saved to the item
             renderTank(poseStack, buffer, Direction.NORTH, stored, storedAmount, maxAmount, FluidStack.EMPTY,
-                    stack.is(CREATIVE_FLUID_ITEM));
+                    stack.is(CREATIVE_FLUID_ITEM), 33);
 
             poseStack.popPose();
         }
@@ -89,16 +89,28 @@ public class QuantumTankRenderer extends TieredHullMachineRenderer {
                        int combinedLight, int combinedOverlay) {
         if (blockEntity instanceof IMachineBlockEntity machineBlockEntity &&
                 machineBlockEntity.getMetaMachine() instanceof QuantumTankMachine machine) {
+            var player = Minecraft.getInstance().player;
+            double distance;
+            if (player == null) {
+                distance = Double.MAX_VALUE;
+            } else {
+                distance = player.position().distanceTo(blockEntity.getBlockPos().getCenter());
+            }
             renderTank(poseStack, buffer, machine.getFrontFacing(), machine.getStored(), machine.getStoredAmount(),
-                    machine.getMaxAmount(), machine.getLockedFluid(), machine instanceof CreativeTankMachine);
+                    machine.getMaxAmount(), machine.getLockedFluid(), machine instanceof CreativeTankMachine, distance);
         }
     }
 
     @OnlyIn(Dist.CLIENT)
     public void renderTank(PoseStack poseStack, MultiBufferSource buffer, Direction frontFacing, FluidStack stored,
-                           long storedAmount, long maxAmount, FluidStack locked, boolean isCreative) {
+                           long storedAmount, long maxAmount, FluidStack locked, boolean isCreative,
+                           double distance) {
         FluidStack fluid = !stored.isEmpty() ? stored : locked;
         if (fluid.isEmpty()) return;
+
+        if (distance > 64) {
+            return;
+        }
 
         var ext = IClientFluidTypeExtensions.of(fluid.getFluid());
         var texture = ext.getStillTexture();
@@ -132,6 +144,10 @@ public class QuantumTankRenderer extends TieredHullMachineRenderer {
         RenderBufferUtils.renderCubeFace(poseStack, builder, MIN, minY, minZ, MAX, maxY, maxZ,
                 ext.getTintColor() | 0xff000000, 0xf000f0, fluidTexture);
         poseStack.popPose();
+
+        if (distance > 32) {
+            return;
+        }
 
         poseStack.pushPose();
         RenderSystem.disableDepthTest();

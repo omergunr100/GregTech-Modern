@@ -70,7 +70,7 @@ public class QuantumChestRenderer extends TieredHullMachineRenderer {
             float tick = Minecraft.getInstance().level.getGameTime() + Minecraft.getInstance().getFrameTime();
             // Don't need to handle locked items here since they don't get saved to the item
             renderChest(poseStack, buffer, Direction.NORTH, itemStack, storedAmount, tick, ItemStack.EMPTY,
-                    stack.is(CREATIVE_CHEST_ITEM));
+                    stack.is(CREATIVE_CHEST_ITEM), 33);
 
             poseStack.popPose();
         }
@@ -86,17 +86,28 @@ public class QuantumChestRenderer extends TieredHullMachineRenderer {
             var level = machine.getLevel();
             var frontFacing = machine.getFrontFacing();
             float tick = level.getGameTime() + partialTicks;
+            var player = Minecraft.getInstance().player;
+            double distance;
+            if (player == null) {
+                distance = Double.MAX_VALUE;
+            } else {
+                distance = player.position().distanceTo(blockEntity.getBlockPos().getCenter());
+            }
             renderChest(poseStack, buffer, frontFacing, machine.getStored(), machine.getStoredAmount(), tick,
-                    machine.getLockedItem(), machine instanceof CreativeChestMachine);
+                    machine.getLockedItem(), machine instanceof CreativeChestMachine, distance);
         }
     }
 
     @OnlyIn(Dist.CLIENT)
     public void renderChest(PoseStack poseStack, MultiBufferSource buffer, Direction frontFacing, ItemStack stored,
                             long storedAmount,
-                            float tick, ItemStack locked, boolean isCreative) {
+                            float tick, ItemStack locked, boolean isCreative, double distance) {
         ItemStack itemStack = !stored.isEmpty() ? stored : locked;
         if (itemStack.isEmpty()) return;
+
+        if (distance > 64) {
+            return;
+        }
 
         var itemRenderer = Minecraft.getInstance().getItemRenderer();
         poseStack.pushPose();
@@ -108,6 +119,10 @@ public class QuantumChestRenderer extends TieredHullMachineRenderer {
         itemRenderer.render(itemStack, ItemDisplayContext.FIXED, false, poseStack, buffer, 0xf000f0,
                 OverlayTexture.NO_OVERLAY, bakedmodel);
         poseStack.popPose();
+
+        if (distance > 32) {
+            return;
+        }
 
         poseStack.pushPose();
         RenderSystem.disableDepthTest();
