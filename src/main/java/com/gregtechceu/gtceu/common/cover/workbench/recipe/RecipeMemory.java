@@ -1,6 +1,5 @@
 package com.gregtechceu.gtceu.common.cover.workbench.recipe;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.IconPhantomSlotWidget;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
@@ -18,19 +17,14 @@ import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.utils.Position;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import com.google.common.math.IntMath;
 import lombok.Data;
@@ -39,7 +33,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.RoundingMode;
-import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -55,7 +48,7 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
     @Setter
     @Getter
     @DescSynced
-    private CraftingRecipe activeRecipe;
+    private CustomItemStackHandler activeRecipe;
     @Persisted
     @DescSynced
     private int rows;
@@ -67,6 +60,7 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
         this.rows = rows;
         this.cols = cols;
         recipeMemory = new MemorizedRecipe[rows * cols];
+        activeRecipe = new CustomItemStackHandler(rows * cols);
         for (int i = 0; i < recipeMemory.length; i++) {
             recipeMemory[i] = new MemorizedRecipe();
         }
@@ -99,13 +93,14 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
     public void memorize() {
         var unlockedSlot = -1;
         var emptySlot = -1;
+        var ingredients = new ItemStack[rows * cols];
         for (int i = 0; i < recipeMemory.length; i++) {
             var mem = recipeMemory[i];
             if (mem.isEmpty()) {
                 if (emptySlot == -1) {
                     emptySlot = i;
                 }
-            } else if (mem.getRecipe().equals(getActiveRecipe())) {
+            } else if (mem.hasRecipe()) {
                 return;
             }
             if (!mem.isLocked() && unlockedSlot == -1) {
@@ -161,10 +156,11 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
 
     @Data
     public static class MemorizedRecipe implements ITagSerializable<CompoundTag> {
-
+        @Persisted
+        private ItemStack[] ingredients;
         @Persisted
         @DescSynced
-        private CraftingRecipe recipe;
+        private ItemStack result;
         @Persisted
         @DescSynced
         private boolean locked;
@@ -172,26 +168,25 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
         @DescSynced
         private int timesUsed;
 
-        public MemorizedRecipe() {}
+        public MemorizedRecipe() {
+            result = ItemStack.EMPTY;
+        }
 
         public MemorizedRecipe(CompoundTag tag) {
             deserializeNBT(tag);
         }
 
         public boolean isEmpty() {
-            return getRecipe() == null;
+            return result.equals(ItemStack.EMPTY);
         }
 
         public boolean isLocked() {
-            return locked && recipe != null;
-        }
-
-        public ItemStack getResult() {
-            return isEmpty() ? ItemStack.EMPTY : getRecipe().getResultItem(null);
+            return locked && !result.equals(ItemStack.EMPTY);
         }
 
         public void clear() {
-            recipe = null;
+            result = ItemStack.EMPTY;
+            ingredients = null;
             locked = false;
             timesUsed = 0;
         }
@@ -199,10 +194,14 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
         @Override
         public CompoundTag serializeNBT() {
             var tag = new CompoundTag();
-            if (recipe != null) {
-                var recipeType = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType());
-                tag.putString("RecipeType", recipeType == null ? "" : recipeType.toString());
-                tag.putString("RecipeID", recipe.getId().toString());
+            if (result != null) {
+                tag.put("Result", result.serializeNBT());
+                tag.putInt("Count", ingredients == null ? 0 : ingredients.length);
+                if (ingredients != null) {
+                    for (int i = 0; i < ingredients.length; i++) {
+                        tag.put("Ingredient" + i, ingredients[i].serializeNBT());
+                    }
+                }
                 tag.putBoolean("Locked", isLocked());
                 tag.putInt("TimesUsed", getTimesUsed());
             }
@@ -214,43 +213,31 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
             if (tag.isEmpty()) {
                 return;
             }
-            var type = tag.getString("RecipeType");
-            if (type.isEmpty()) {
-                return;
+            result = ItemStack.of(tag.getCompound("Result"));
+            var count = tag.getInt("Count");
+            if (count > 0) {
+                ingredients = new ItemStack[count];
+                for (int i = 0; i < count; i++) {
+                    ingredients[i] = ItemStack.of(tag.getCompound("Ingredient" + i));
+                }
             }
-            var id = new ResourceLocation(tag.getString("RecipeID"));
-            var recipeType = BuiltInRegistries.RECIPE_TYPE.get(new ResourceLocation(type));
-            if (recipeType == null) {
-                return;
-            }
-
-            RecipeManager manager;
-            if (GTCEu.isClientThread()) {
-                // todo: test on dedicated server
-                manager = Minecraft.getInstance().getConnection().getRecipeManager();
-            } else {
-                manager = ServerLifecycleHooks.getCurrentServer().getRecipeManager();
-            }
-            manager.getRecipes().stream()
-                    .filter(r -> r instanceof CraftingRecipe && r.getType() == recipeType && r.getId().equals(id))
-                    .findFirst()
-                    .ifPresent(r -> recipe = (CraftingRecipe) r);
-
-            setLocked(recipe != null && tag.getBoolean("Locked"));
-            setTimesUsed(recipe == null ? 0 : tag.getInt("TimesUsed"));
+            setLocked(isEmpty() && tag.getBoolean("Locked"));
+            setTimesUsed(isEmpty() ? 0 : tag.getInt("TimesUsed"));
         }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof MemorizedRecipe that) || recipe == null) return false;
-
-            return Objects.equals(getRecipe(), that.getRecipe());
+        
+        public boolean hasRecipe(ItemStack[] ingredients, ItemStack result) {
+            if (this.ingredients == null || this.result == null || !this.result.equals(result)) {
+                return false;
+            }
+            if (!isLocked()) {
+                this.ingredients = ingredients;
+            }
+            return true;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(getRecipe());
+            return getResult().hashCode();
         }
     }
 
@@ -298,15 +285,15 @@ public class RecipeMemory implements ITagSerializable<CompoundTag>, IContentChan
                 return ItemStack.EMPTY.copy();
             }
             if (mouseButton == 0) {
-                var ingredients = recipe.getRecipe().getIngredients();
+                var ingredients = recipe.getIngredients();
                 var sqrt = IntMath.sqrt(craftingGrid.length, RoundingMode.UNNECESSARY);
                 for (int i = 0; i < sqrt; i++) {
                     for (int j = 0; j < sqrt; j++) {
                         ItemStack stack;
                         var slotInd = j + i * 3;
-                        if (i < ingredients.size()) {
+                        if (ingredients != null && i < ingredients.length) {
                             // todo: change the crafting grid visual slots to ingredient slots instead of item stacks
-                            stack = ingredients.get(slotInd).getItems()[0];
+                            stack = ingredients[i];
                         } else {
                             stack = ItemStack.EMPTY;
                         }
