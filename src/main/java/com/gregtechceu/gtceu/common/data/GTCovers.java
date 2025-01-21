@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.common.cover.voiding.AdvancedFluidVoidingCover;
 import com.gregtechceu.gtceu.common.cover.voiding.AdvancedItemVoidingCover;
 import com.gregtechceu.gtceu.common.cover.voiding.FluidVoidingCover;
 import com.gregtechceu.gtceu.common.cover.voiding.ItemVoidingCover;
+import com.gregtechceu.gtceu.common.cover.workbench.WorkbenchCover;
 
 import net.minecraftforge.fml.ModLoader;
 
@@ -60,6 +61,10 @@ public class GTCovers {
     public final static CoverDefinition COVER_STORAGE = register(
             "storage", StorageCover::new,
             new SimpleCoverRenderer(GTCEu.id("block/cover/storage_cover")));
+
+    public static final CoverDefinition COVER_WORKBENCH = register(
+            "workbench", WorkbenchCover::new,
+            new SimpleCoverRenderer(GTCEu.id("block/cover/workbench_cover")));
 
     public final static CoverDefinition[] CONVEYORS = registerTiered(
             "conveyor", ConveyorCover::new,

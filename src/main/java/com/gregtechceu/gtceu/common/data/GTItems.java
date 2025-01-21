@@ -1942,6 +1942,13 @@ public class GTItems {
             .lang("Storage Cover")
             .onRegister(attach(new CoverPlaceBehavior(GTCovers.COVER_STORAGE)))
             .register();
+    public static ItemEntry<ComponentItem> COVER_WORKBENCH = REGISTRATE
+            .item("workbench_cover", ComponentItem::create)
+            .lang("Workbench Cover")
+            .onRegister(attach(new CoverPlaceBehavior(GTCovers.COVER_WORKBENCH)))
+            .onRegister(attach(new TooltipBehavior(
+                    lines -> lines.addAll(LangHandler.getMultiLang("gtceu.machine.workbench.tooltip")))))
+            .register();
     public static ItemEntry<ComponentItem> COVER_SHUTTER = REGISTRATE
             .item("shutter_module_cover", ComponentItem::create)
             .lang("Shutter Module")
