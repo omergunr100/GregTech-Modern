@@ -3,6 +3,8 @@ package com.gregtechceu.gtceu.utils;
 import net.minecraft.MethodsReturnNonnullByDefault;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.jetbrains.annotations.Contract;
+import org.joml.Vector3f;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -34,5 +36,26 @@ public class GTMath {
         } else {
             return value < -2147483648L ? Integer.MIN_VALUE : (int) value;
         }
+    }
+
+    /**
+     * @param from the original vector
+     * @param to   the wanted vector
+     * @return the angle of rotation to make {@code from} point in the direction of {@code to}
+     */
+    @Contract(pure = true)
+    public static float getRotationAngle(final Vector3f from, final Vector3f to) {
+        return (float) Math.acos(from.dot(to));
+    }
+
+    /**
+     * This method isn't pure, {@code from} will be modified!
+     * 
+     * @param from the original vector
+     * @param to   the wanted vector
+     * @return the axis of rotation to make {@code from} point in the direction of {@code to}
+     */
+    public static Vector3f getRotationAxis(Vector3f from, final Vector3f to) {
+        return from.cross(to).normalize();
     }
 }
