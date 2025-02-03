@@ -3,6 +3,7 @@ package com.gregtechceu.gtceu.api.machine;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.BlockProperties;
 import com.gregtechceu.gtceu.api.block.IAppearance;
+import com.gregtechceu.gtceu.api.block.IMachineBlock;
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.IPaintable;
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
@@ -373,6 +374,11 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
 
     protected InteractionResult onWrenchClick(Player playerIn, InteractionHand hand, Direction gridSide,
                                               BlockHitResult hitResult) {
+        if (gridSide == getFrontFacing() && allowExtendedFacing()) {
+            setUpwardsFacing(playerIn.isShiftKeyDown() ? getUpwardsFacing().getCounterClockWise() :
+                    getUpwardsFacing().getClockWise());
+            return InteractionResult.CONSUME;
+        }
         if (playerIn.isShiftKeyDown()) {
             if (gridSide == getFrontFacing() || !isFacingValid(gridSide)) {
                 return InteractionResult.FAIL;
@@ -587,6 +593,9 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
     }
 
     public boolean isFacingValid(Direction facing) {
+        if (allowExtendedFacing()) {
+            return true;
+        }
         if (hasFrontFacing() && facing == getFrontFacing()) return false;
         var blockState = getBlockState();
         if (blockState.getBlock() instanceof MetaMachineBlock metaMachineBlock) {
@@ -603,7 +612,36 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
         }
     }
 
+    public Direction getUpwardsFacing() {
+        return this.allowExtendedFacing() ? this.getBlockState().getValue(IMachineBlock.UPWARDS_FACING_PROPERTY) :
+                Direction.NORTH;
+    }
+
+    public void setUpwardsFacing(@NotNull Direction upwardsFacing) {
+        if (!getDefinition().isAllowExtendedFacing()) {
+            return;
+        }
+        if (upwardsFacing.getAxis() == Direction.Axis.Y) {
+            GTCEu.LOGGER.error("Tried to set upwards facing to invalid facing {}! Skipping", upwardsFacing);
+            return;
+        }
+        var blockState = getBlockState();
+        if (blockState.getBlock() instanceof MetaMachineBlock &&
+                blockState.getValue(IMachineBlock.UPWARDS_FACING_PROPERTY) != upwardsFacing) {
+            getLevel().setBlockAndUpdate(getPos(),
+                    blockState.setValue(IMachineBlock.UPWARDS_FACING_PROPERTY, upwardsFacing));
+            if (getLevel() != null && !getLevel().isClientSide) {
+                notifyBlockUpdate();
+                markDirty();
+            }
+        }
+    }
+
     public void onRotated(Direction oldFacing, Direction newFacing) {}
+
+    public boolean allowExtendedFacing() {
+        return getDefinition().isAllowExtendedFacing();
+    }
 
     public int tintColor(int index) {
         // index < -100 => emission if shimmer is installed.

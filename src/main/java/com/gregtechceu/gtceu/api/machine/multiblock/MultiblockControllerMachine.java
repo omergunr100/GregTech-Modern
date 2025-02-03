@@ -233,32 +233,21 @@ public class MultiblockControllerMachine extends MetaMachine implements IMultiCo
         }
     }
 
-    public boolean allowExtendedFacing() {
-        return getDefinition().isAllowExtendedFacing();
-    }
-
     public boolean allowFlip() {
         return getDefinition().isAllowFlip();
     }
 
     @Override
-    public boolean isFacingValid(Direction facing) {
-        return allowExtendedFacing() || super.isFacingValid(facing);
-    }
-
-    public Direction getUpwardsFacing() {
-        return this.allowExtendedFacing() ? this.getBlockState().getValue(IMachineBlock.UPWARDS_FACING_PROPERTY) :
-                Direction.NORTH;
-    }
-
     public void setUpwardsFacing(@NotNull Direction upwardsFacing) {
-        if (!getDefinition().isAllowExtendedFacing()) return;
-        if (upwardsFacing == null || upwardsFacing == Direction.UP || upwardsFacing == Direction.DOWN) {
+        if (!getDefinition().isAllowExtendedFacing()) {
+            return;
+        }
+        if (upwardsFacing.getAxis() == Direction.Axis.Y) {
             GTCEu.LOGGER.error("Tried to set upwards facing to invalid facing {}! Skipping", upwardsFacing);
             return;
         }
-        BlockState blockState = getBlockState();
-        if (blockState.getBlock() instanceof MetaMachineBlock metaMachineBlock &&
+        var blockState = getBlockState();
+        if (blockState.getBlock() instanceof MetaMachineBlock &&
                 blockState.getValue(IMachineBlock.UPWARDS_FACING_PROPERTY) != upwardsFacing) {
             getLevel().setBlockAndUpdate(getPos(),
                     blockState.setValue(IMachineBlock.UPWARDS_FACING_PROPERTY, upwardsFacing));
