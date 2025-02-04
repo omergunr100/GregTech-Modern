@@ -11,7 +11,6 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.MultiblockWorldSavedData;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 
 import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
@@ -281,17 +280,9 @@ public class MultiblockControllerMachine extends MetaMachine implements IMultiCo
 
     @Override
     public void setFrontFacing(Direction facing) {
-        Direction oldFacing = getFrontFacing();
-
-        if (allowExtendedFacing()) {
-            Direction newUpwardsFacing = RelativeDirection.simulateAxisRotation(facing, oldFacing, getUpwardsFacing());
-            setUpwardsFacing(newUpwardsFacing);
-        }
         super.setFrontFacing(facing);
 
         if (getLevel() != null && !getLevel().isClientSide) {
-            notifyBlockUpdate();
-            markDirty();
             checkPattern();
         }
     }

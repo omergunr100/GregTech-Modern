@@ -23,6 +23,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTrait;
 import com.gregtechceu.gtceu.api.misc.IOFilteredInvWrapper;
 import com.gregtechceu.gtceu.api.misc.IOFluidHandlerList;
+import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.transfer.fluid.IFluidHandlerModifiable;
 import com.gregtechceu.gtceu.common.cover.FluidFilterCover;
 import com.gregtechceu.gtceu.common.cover.ItemFilterCover;
@@ -605,10 +606,22 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
     }
 
     public void setFrontFacing(Direction facing) {
+        var oldFacing = getFrontFacing();
+
+        if (allowExtendedFacing()) {
+            var newUpwardsFacing = RelativeDirection.simulateAxisRotation(facing, oldFacing, getUpwardsFacing());
+            setUpwardsFacing(newUpwardsFacing);
+        }
+
         var blockState = getBlockState();
         if (blockState.getBlock() instanceof MetaMachineBlock metaMachineBlock && isFacingValid(facing)) {
             getLevel().setBlockAndUpdate(getPos(),
                     blockState.setValue(metaMachineBlock.rotationState.property, facing));
+        }
+
+        if (getLevel() != null && !getLevel().isClientSide) {
+            notifyBlockUpdate();
+            markDirty();
         }
     }
 
