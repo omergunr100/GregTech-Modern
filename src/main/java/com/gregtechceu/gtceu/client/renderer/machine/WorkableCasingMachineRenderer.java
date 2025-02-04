@@ -49,8 +49,8 @@ public class WorkableCasingMachineRenderer extends MachineRenderer {
                               ModelState modelState) {
         super.renderMachine(quads, definition, machine, frontFacing, side, rand, modelFacing, modelState);
         var upwardsFacing = Direction.NORTH;
-        if (machine != null) {
-            upwardsFacing = machine.self().getUpwardsFacing();
+        if (machine != null && machine.allowExtendedFacing()) {
+            upwardsFacing = machine.getUpwardsFacing();
         }
         if (machine instanceof IWorkable workable) {
             quads.addAll(overlayModel.bakeQuads(side, frontFacing, upwardsFacing, workable.isActive(),
