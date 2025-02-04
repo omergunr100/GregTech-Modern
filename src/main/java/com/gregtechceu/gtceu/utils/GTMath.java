@@ -56,6 +56,10 @@ public class GTMath {
      * @return the axis of rotation to make {@code from} point in the direction of {@code to}
      */
     public static Vector3f getRotationAxis(Vector3f from, final Vector3f to) {
-        return from.cross(to).normalize();
+        return getRotationAxis(from, to, from);
+    }
+
+    public static Vector3f getRotationAxis(Vector3f from, Vector3f to, Vector3f dest) {
+        return from.cross(to, dest).normalize();
     }
 }
