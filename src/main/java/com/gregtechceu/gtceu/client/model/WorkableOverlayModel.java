@@ -3,6 +3,7 @@ package com.gregtechceu.gtceu.client.model;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.client.util.StaticFaceBakery;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.utils.GTMath;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import com.lowdragmc.lowdraglib.client.model.ModelFactory;
@@ -30,8 +31,9 @@ import com.mojang.math.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
+import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -136,36 +138,12 @@ public class WorkableOverlayModel {
                                      boolean isActive, boolean isWorkingEnabled) {
         var quads = new ArrayList<BakedQuad>();
 
-        float degree = Mth.HALF_PI * (upwardsFacing == Direction.EAST ? 1 :
-                upwardsFacing == Direction.SOUTH ? 2 : upwardsFacing == Direction.WEST ? -1 : 0);
-
         Matrix4f matrix = new Matrix4f();
-
-        if (frontFacing.getAxis() != Direction.Axis.Y) {
-            double rotationRad = Math.toRadians(frontFacing.toYRot());
-            Quaternionf worldUp = new Quaternionf().rotationAxis(Mth.PI - (float) rotationRad, 0, 1, 0);
-            matrix.rotate(worldUp);
-        } else {
-            matrix.rotate(Mth.HALF_PI, frontFacing.getStepY(), 0, 0);
-            if (upwardsFacing.getAxis() == Direction.Axis.Z) {
-                matrix.rotate(Mth.PI, 0, 0, upwardsFacing.getStepZ());
-            }
-            if (frontFacing.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
-                matrix.rotate(Mth.PI, 0, 0, 1);
-            }
-        }
-
-        Quaternionf rot = new Quaternionf().rotationAxis(degree, 0, 0,
-                frontFacing.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? 1 : -1);
-
-        if (frontFacing.getAxisDirection() == Direction.AxisDirection.POSITIVE &&
-                frontFacing.getAxis() != Direction.Axis.Y) {
-            if (upwardsFacing.getAxis() != Direction.Axis.Z) {
-                matrix.rotate(Mth.PI, 0, 0, 1);
-            }
-        }
-
-        matrix.rotate(rot);
+        // rotate frontFacing to correct cardinal direction
+        var front = frontFacing.step();
+        rotateMatrix(matrix, Direction.NORTH.step(), frontFacing.step(), front);
+        // rotate upwards face to the correct orientation
+        rotateMatrix(matrix, upwardFacingAngleMult(upwardsFacing) * Mth.PI / 2, front.x, front.y, front.z);
 
         var rotation = new SimpleModelState(new Transformation(matrix));
 
@@ -204,10 +182,40 @@ public class WorkableOverlayModel {
         return quads;
     }
 
+    protected int upwardFacingAngleMult(Direction upward) {
+        return switch (upward) {
+            case NORTH -> 0;
+            case SOUTH -> 2;
+            case WEST -> 1;
+            case EAST -> 3;
+            default -> throw new InvalidParameterException("Upward facing can't be up/down");
+        };
+    }
+
+    protected void rotateMatrix(Matrix4f matrix, Vector3f from, Vector3f to, Vector3f... additional) {
+        if (from.equals(to)) {
+            return;
+        }
+        if (-from.x == to.x && -from.y == to.y && -from.z == to.z) {
+            rotateMatrix(matrix, Mth.PI, 0, 1, 0, additional);
+        } else {
+            var angle = GTMath.getRotationAngle(from, to);
+            GTMath.getRotationAxis(from, to);
+            rotateMatrix(matrix, angle, from.x, from.y, from.z, additional);
+        }
+    }
+
+    protected void rotateMatrix(Matrix4f matrix, float angle, float x, float y, float z, Vector3f... additional) {
+        matrix.rotate(angle, x, y, z);
+        for (var vec : additional) {
+            vec.rotateAxis(angle, x, y, z);
+        }
+    }
+
     @NotNull
     @OnlyIn(Dist.CLIENT)
     public TextureAtlasSprite getParticleTexture() {
-        for (WorkableOverlayModel.ActivePredicate predicate : sprites.values()) {
+        for (ActivePredicate predicate : sprites.values()) {
             TextureAtlasSprite sprite = predicate.getSprite(false, false);
             if (sprite != null) return sprite;
         }
