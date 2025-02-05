@@ -73,7 +73,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -591,7 +590,8 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
         if (hasFrontFacing() && facing == getFrontFacing()) return false;
         var coverContainer = getCoverContainer();
         if (coverContainer.hasCover(facing)) {
-            var coverDefinition = Objects.requireNonNull(coverContainer.getCoverAtSide(facing)).coverDefinition;
+            // noinspection DataFlowIssue
+            var coverDefinition = coverContainer.getCoverAtSide(facing).coverDefinition;
             var behaviour = coverDefinition.createCoverBehavior(coverContainer, getFrontFacing());
             if (!behaviour.canAttach()) {
                 return false;
@@ -689,9 +689,6 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
 
     @Nullable
     public IItemHandlerModifiable getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        if (side == getFrontFacing()) {
-            return null;
-        }
         var list = getTraits().stream()
                 .filter(IItemHandlerModifiable.class::isInstance)
                 .filter(t -> t.hasCapability(side))
@@ -716,9 +713,6 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
 
     @Nullable
     public IFluidHandlerModifiable getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        if (side == getFrontFacing()) {
-            return null;
-        }
         var list = getTraits().stream()
                 .filter(IFluidHandler.class::isInstance)
                 .filter(t -> t.hasCapability(side))
