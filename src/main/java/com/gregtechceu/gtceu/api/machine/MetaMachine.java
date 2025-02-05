@@ -73,6 +73,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -588,6 +589,14 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
 
     public boolean isFacingValid(Direction facing) {
         if (hasFrontFacing() && facing == getFrontFacing()) return false;
+        var coverContainer = getCoverContainer();
+        if (coverContainer.hasCover(facing)) {
+            var coverDefinition = Objects.requireNonNull(coverContainer.getCoverAtSide(facing)).coverDefinition;
+            var behaviour = coverDefinition.createCoverBehavior(coverContainer, getFrontFacing());
+            if (!behaviour.canAttach()) {
+                return false;
+            }
+        }
         var blockState = getBlockState();
         if (blockState.getBlock() instanceof MetaMachineBlock metaMachineBlock) {
             return metaMachineBlock.rotationState.test(facing);
