@@ -680,6 +680,9 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
 
     @Nullable
     public IItemHandlerModifiable getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        if (side == getFrontFacing()) {
+            return null;
+        }
         var list = getTraits().stream()
                 .filter(IItemHandlerModifiable.class::isInstance)
                 .filter(t -> t.hasCapability(side))
@@ -704,6 +707,9 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
 
     @Nullable
     public IFluidHandlerModifiable getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        if (side == getFrontFacing()) {
+            return null;
+        }
         var list = getTraits().stream()
                 .filter(IFluidHandler.class::isInstance)
                 .filter(t -> t.hasCapability(side))
