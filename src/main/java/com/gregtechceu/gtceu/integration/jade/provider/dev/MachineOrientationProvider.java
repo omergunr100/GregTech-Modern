@@ -2,8 +2,8 @@ package com.gregtechceu.gtceu.integration.jade.provider.dev;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
-
 import com.gregtechceu.gtceu.config.ConfigHolder;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 

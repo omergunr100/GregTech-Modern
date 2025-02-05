@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
 import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.data.lang.LangHandler;
-import com.gregtechceu.gtceu.utils.GTMath;
 import com.gregtechceu.gtceu.utils.RedstoneUtil;
 
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
@@ -24,6 +23,7 @@ import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -105,7 +105,7 @@ public class AdvancedFluidDetectorCover extends FluidDetectorCover implements IU
     }
 
     public void setMinValue(int minValue) {
-        this.minValue = GTMath.clamp(minValue, 0, maxValue - 1);
+        this.minValue = Mth.clamp(minValue, 0, maxValue - 1);
     }
 
     public void setMaxValue(int maxValue) {

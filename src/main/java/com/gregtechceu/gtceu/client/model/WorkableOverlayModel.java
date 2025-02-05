@@ -3,7 +3,6 @@ package com.gregtechceu.gtceu.client.model;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.client.util.StaticFaceBakery;
 import com.gregtechceu.gtceu.config.ConfigHolder;
-import com.gregtechceu.gtceu.utils.GTMath;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import com.lowdragmc.lowdraglib.client.model.ModelFactory;
@@ -19,7 +18,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -31,13 +29,14 @@ import com.mojang.math.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
-import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.function.Consumer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+
+import static com.gregtechceu.gtceu.utils.GTMatrixUtils.*;
+import static com.gregtechceu.gtceu.utils.GTMatrixUtils.rotateMatrix;
 
 /**
  * @author KilaBash
@@ -143,7 +142,7 @@ public class WorkableOverlayModel {
         var front = frontFacing.step();
         rotateMatrix(matrix, Direction.NORTH.step(), frontFacing.step(), front);
         // rotate upwards face to the correct orientation
-        rotateMatrix(matrix, upwardFacingAngleMult(upwardsFacing) * Mth.PI / 2, front.x, front.y, front.z);
+        rotateMatrix(matrix, upwardFacingAngle(upwardsFacing), front.x, front.y, front.z);
 
         var rotation = new SimpleModelState(new Transformation(matrix));
 
@@ -180,36 +179,6 @@ public class WorkableOverlayModel {
             }
         }
         return quads;
-    }
-
-    protected int upwardFacingAngleMult(Direction upward) {
-        return switch (upward) {
-            case NORTH -> 0;
-            case SOUTH -> 2;
-            case WEST -> 1;
-            case EAST -> 3;
-            default -> throw new InvalidParameterException("Upward facing can't be up/down");
-        };
-    }
-
-    protected void rotateMatrix(Matrix4f matrix, Vector3f from, Vector3f to, Vector3f... additional) {
-        if (from.equals(to)) {
-            return;
-        }
-        if (-from.x == to.x && -from.y == to.y && -from.z == to.z) {
-            rotateMatrix(matrix, Mth.PI, 0, 1, 0, additional);
-        } else {
-            var angle = GTMath.getRotationAngle(from, to);
-            GTMath.getRotationAxis(from, to);
-            rotateMatrix(matrix, angle, from.x, from.y, from.z, additional);
-        }
-    }
-
-    protected void rotateMatrix(Matrix4f matrix, float angle, float x, float y, float z, Vector3f... additional) {
-        matrix.rotate(angle, x, y, z);
-        for (var vec : additional) {
-            vec.rotateAxis(angle, x, y, z);
-        }
     }
 
     @NotNull
