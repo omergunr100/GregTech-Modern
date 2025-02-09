@@ -3,7 +3,12 @@ package com.gregtechceu.gtceu.utils;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraftforge.client.model.SimpleModelState;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
+import com.mojang.math.Transformation;
 import org.jetbrains.annotations.Contract;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -15,6 +20,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class GTMatrixUtils {
+
+    protected static final Table<Direction, Direction, SimpleModelState> rotations = Tables
+            .synchronizedTable(HashBasedTable.create());
 
     /**
      * @param from the original vector
@@ -96,5 +104,23 @@ public class GTMatrixUtils {
             case EAST -> 3;
             default -> throw new InvalidParameterException("Upward facing can't be up/down");
         } * Mth.PI / 2;
+    }
+
+    public static SimpleModelState createRotationState(Direction frontFace, Direction upwardFace) {
+        if (rotations.contains(frontFace, upwardFace)) {
+            var rotation = rotations.get(frontFace, upwardFace);
+            assert rotation != null;
+            return rotation;
+        }
+        var matrix = new Matrix4f();
+        // rotate frontFacing to correct cardinal direction
+        var front = frontFace.step();
+        rotateMatrix(matrix, Direction.NORTH.step(), frontFace.step(), front);
+        // rotate upwards face to the correct orientation
+        rotateMatrix(matrix, upwardFacingAngle(upwardFace), front.x, front.y, front.z);
+
+        var rotation = new SimpleModelState(new Transformation(matrix));
+        rotations.put(frontFace, upwardFace, rotation);
+        return rotation;
     }
 }

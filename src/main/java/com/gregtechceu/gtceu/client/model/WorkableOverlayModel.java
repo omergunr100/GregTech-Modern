@@ -22,13 +22,10 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.SimpleModelState;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -36,7 +33,6 @@ import java.util.function.Consumer;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import static com.gregtechceu.gtceu.utils.GTMatrixUtils.*;
-import static com.gregtechceu.gtceu.utils.GTMatrixUtils.rotateMatrix;
 
 /**
  * @author KilaBash
@@ -137,16 +133,9 @@ public class WorkableOverlayModel {
                                      boolean isActive, boolean isWorkingEnabled) {
         var quads = new ArrayList<BakedQuad>();
 
-        Matrix4f matrix = new Matrix4f();
-        // rotate frontFacing to correct cardinal direction
-        var front = frontFacing.step();
-        rotateMatrix(matrix, Direction.NORTH.step(), frontFacing.step(), front);
-        // rotate upwards face to the correct orientation
-        rotateMatrix(matrix, upwardFacingAngle(upwardsFacing), front.x, front.y, front.z);
+        var rotation = createRotationState(frontFacing, upwardsFacing);
 
-        var rotation = new SimpleModelState(new Transformation(matrix));
-
-        for (Direction renderSide : GTUtil.DIRECTIONS) {
+        for (var renderSide : GTUtil.DIRECTIONS) {
             // construct a rotation matrix from front & up rotation
 
             ActivePredicate predicate = sprites.get(OverlayFace.bySide(renderSide));
