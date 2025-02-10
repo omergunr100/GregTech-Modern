@@ -100,8 +100,8 @@ public class GTMatrixUtils {
         return switch (upward) {
             case NORTH -> 0;
             case SOUTH -> 2;
-            case WEST -> 1;
-            case EAST -> 3;
+            case WEST -> 3;
+            case EAST -> 1;
             default -> throw new InvalidParameterException("Upward facing can't be up/down");
         } * Mth.PI / 2;
     }
