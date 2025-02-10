@@ -103,7 +103,7 @@ public class GTMatrixUtils {
             case WEST -> 3;
             case EAST -> 1;
             default -> throw new InvalidParameterException("Upward facing can't be up/down");
-        } * Mth.PI / 2;
+        } * Mth.HALF_PI;
     }
 
     public static Vector3f rotateMatrixToFront(Matrix4f matrix, Direction frontFace) {
