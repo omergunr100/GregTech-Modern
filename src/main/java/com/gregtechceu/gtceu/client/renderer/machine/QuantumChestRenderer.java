@@ -31,6 +31,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import org.joml.Quaternionf;
 
+import static com.gregtechceu.gtceu.utils.GTMatrixUtils.*;
+
 /**
  * @author KilaBash
  * @date 2023/3/2
@@ -83,11 +85,19 @@ public class QuantumChestRenderer extends TieredHullMachineRenderer {
                        int combinedLight, int combinedOverlay) {
         if (blockEntity instanceof IMachineBlockEntity machineBlockEntity &&
                 machineBlockEntity.getMetaMachine() instanceof QuantumChestMachine machine) {
+            poseStack.pushPose();
             var level = machine.getLevel();
             var frontFacing = machine.getFrontFacing();
-            float tick = level.getGameTime() + partialTicks;
+            var upwardFacing = machine.getUpwardsFacing();
+            var tick = level.getGameTime() + partialTicks;
+            poseStack.translate(.5, .5, .5);
+            rotateMatrix(poseStack.last().pose(),
+                    upwardFacingAngle(upwardFacing) + (upwardFacing.getAxis() == Direction.Axis.X ? Mth.PI : 0),
+                    frontFacing.getStepX(), frontFacing.getStepY(), frontFacing.getStepZ());
+            poseStack.translate(-.5, -.5, -.5);
             renderChest(poseStack, buffer, frontFacing, machine.getStored(), machine.getStoredAmount(), tick,
                     machine.getLockedItem(), machine instanceof CreativeChestMachine);
+            poseStack.popPose();
         }
     }
 
