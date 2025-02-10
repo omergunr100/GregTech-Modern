@@ -788,9 +788,6 @@ public class ConfigHolder {
         @Configurable
         @Configurable.Comment({ "Dump all registered GT models/blockstates/etc?", "Default: false" })
         public boolean dumpAssets = false;
-        @Configurable
-        @Configurable.Comment({ "Enable debug data providers?", "Default: false" })
-        public boolean enabledDebugDataProviders = false;
     }
 
     public static class RendererConfigs {
