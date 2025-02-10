@@ -106,12 +106,16 @@ public class GTMatrixUtils {
         } * Mth.PI / 2;
     }
 
-    public static void rotateMatrixToFacing(Matrix4f matrix, Direction frontFace, Direction upwardFace) {
+    public static Vector3f rotateMatrixToFront(Matrix4f matrix, Direction frontFace) {
         // rotate frontFacing to correct cardinal direction
         var front = frontFace.step();
         rotateMatrix(matrix, Direction.NORTH.step(), frontFace.step(), front);
+        return front;
+    }
+
+    public static void rotateMatrixToUp(Matrix4f matrix, Vector3f front, Direction upwardsFace) {
         // rotate upwards face to the correct orientation
-        rotateMatrix(matrix, upwardFacingAngle(upwardFace), front.x, front.y, front.z);
+        rotateMatrix(matrix, upwardFacingAngle(upwardsFace), front.x, front.y, front.z);
     }
 
     public static SimpleModelState createRotationState(Direction frontFace, Direction upwardFace) {
@@ -121,8 +125,9 @@ public class GTMatrixUtils {
             return rotation;
         }
         var matrix = new Matrix4f();
-        rotateMatrixToFacing(matrix, frontFace, upwardFace);
-
+        var front = rotateMatrixToFront(matrix, frontFace);
+        front.absolute();
+        rotateMatrixToUp(matrix, front, upwardFace);
         var rotation = new SimpleModelState(new Transformation(matrix));
         rotations.put(frontFace, upwardFace, rotation);
         return rotation;
