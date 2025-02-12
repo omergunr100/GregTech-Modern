@@ -386,7 +386,10 @@ public interface IGTTool extends HeldItemUIFactory.IHeldItemUIHolder, ItemLike {
                         if (playSoundOnBlockDestroy()) playSound(player);
                     } else {
                         if (result == -1) {
-                            if (getBehaviorsTag(stack).getBoolean(TREE_FELLING_KEY) && state.is(BlockTags.LOGS)) {
+                            var tag = getBehaviorsTag(stack);
+                            if (tag.getBoolean(TREE_FELLING_KEY) &&
+                                    !tag.getBoolean(DISABLE_TREE_FELLING_KEY) &&
+                                    state.is(BlockTags.LOGS)) {
                                 TreeFellingHelper.fellTree(stack, player.level(), state, pos, player);
                             }
                             if (playSoundOnBlockDestroy()) playSound(player);
@@ -582,22 +585,21 @@ public interface IGTTool extends HeldItemUIFactory.IHeldItemUIHolder, ItemLike {
     }
 
     default InteractionResultHolder<ItemStack> definition$use(Level world, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
+        var heldItem = player.getItemInHand(hand);
         // TODO: relocate to keybind action when keybind PR happens
-        if (player.isShiftKeyDown() && getMaxAoEDefinition(stack) != AoESymmetrical.none()) {
-            ItemStack heldItem = player.getItemInHand(hand);
+        if (player.isShiftKeyDown() && getMaxAoEDefinition(heldItem) != AoESymmetrical.none()) {
             if (player instanceof ServerPlayer serverPlayer) {
                 HeldItemUIFactory.INSTANCE.openUI(serverPlayer, hand);
             }
             return InteractionResultHolder.success(heldItem);
         }
 
-        for (IToolBehavior behavior : getToolStats().getBehaviors()) {
+        for (var behavior : getToolStats().getBehaviors()) {
             if (behavior.onItemRightClick(world, player, hand).getResult() == InteractionResult.SUCCESS) {
-                return InteractionResultHolder.success(stack);
+                return InteractionResultHolder.success(heldItem);
             }
         }
-        return InteractionResultHolder.pass(stack);
+        return InteractionResultHolder.pass(heldItem);
     }
 
     default boolean definition$shouldOpenUIAfterUse(UseOnContext context) {
