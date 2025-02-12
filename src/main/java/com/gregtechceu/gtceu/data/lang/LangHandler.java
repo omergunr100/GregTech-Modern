@@ -247,6 +247,7 @@ public class LangHandler {
         provider.add("item.gtceu.tool.aoe.rows", "Rows");
         provider.add("item.gtceu.tool.aoe.columns", "Columns");
         provider.add("item.gtceu.tool.aoe.layers", "Layers");
+        provider.add("item.gtceu.tool.tree_felling.disable", "Disable Tree Felling");
         provider.add("item.gtceu.turbine_rotor.tooltip", "Turbine Rotors for your power station");
         provider.add("metaitem.clipboard.tooltip",
                 "Can be written on (without any writing Instrument). Right-click on Wall to place, and Shift-Right-Click to remove");

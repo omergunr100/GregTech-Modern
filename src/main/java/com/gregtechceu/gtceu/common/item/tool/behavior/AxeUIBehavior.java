@@ -39,7 +39,7 @@ public class AxeUIBehavior implements IToolUIBehavior {
                     }
                     holder.markAsDirty();
                 }));
-        inner.addWidget(new LabelWidget(26, 4, "Disable tree felling"));
+        inner.addWidget(new LabelWidget(26, 4, "item.gtceu.tool.tree_felling.disable"));
         var group = new WidgetGroup(Position.ORIGIN, inner.getSize().add(20, 10));
         group.addWidget(inner);
         return new ModularUI(group, holder, player).background(GuiTextures.BACKGROUND);
