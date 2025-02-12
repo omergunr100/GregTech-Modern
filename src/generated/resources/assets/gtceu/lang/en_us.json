@@ -2010,6 +2010,7 @@
   "cover.machine_controller.mode.cover_up": "Control Cover (Top)",
   "cover.machine_controller.mode.cover_west": "Control Cover (West)",
   "cover.machine_controller.mode.machine": "Control Machine",
+  "cover.machine_controller.mode.null": "Control Nothing",
   "cover.machine_controller.normal": "Normal",
   "cover.machine_controller.redstone": "Min Redstone Strength: %d",
   "cover.machine_controller.title": "Machine Controller Settings",
