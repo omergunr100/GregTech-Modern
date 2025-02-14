@@ -73,7 +73,7 @@ public class GTToolType {
             .harvestTag(TagUtil.createBlockTag("mineable/axe", true))
             .toolStats(b -> b.blockBreaking()
                     .attackDamage(5.0F).attackSpeed(-3.2F).baseEfficiency(2.0F)
-                    .behaviors(AxeUIBehavior.INSTANCE, DisableShieldBehavior.INSTANCE, TreeFellingBehavior.INSTANCE,
+                    .behaviors(DisableShieldBehavior.INSTANCE, TreeFellingBehavior.INSTANCE,
                             LogStripBehavior.INSTANCE,
                             ScrapeBehavior.INSTANCE, WaxOffBehavior.INSTANCE))
             .constructor(GTAxeItem::create)
@@ -326,7 +326,7 @@ public class GTToolType {
                     .efficiencyMultiplier(2.0F)
                     .attackDamage(5.0F).attackSpeed(-3.2F)
                     .brokenStack(ToolHelper.SUPPLY_POWER_UNIT_LV)
-                    .behaviors(AxeUIBehavior.INSTANCE, HarvestIceBehavior.INSTANCE, DisableShieldBehavior.INSTANCE,
+                    .behaviors(HarvestIceBehavior.INSTANCE, DisableShieldBehavior.INSTANCE,
                             TreeFellingBehavior.INSTANCE))
             .sound(GTSoundEntries.CHAINSAW_TOOL, true)
             .electric(GTValues.LV)
