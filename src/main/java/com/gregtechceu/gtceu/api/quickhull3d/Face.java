@@ -57,23 +57,17 @@ public class Face {
 
     protected Face next;
 
-    protected int numVerts;
+    protected int numVertices;
 
     protected Vertex outside;
 
     protected double planeOffset;
 
     @Getter
-    private Vector3d centroid;
+    protected final Vector3d centroid;
 
-    /**
-     * -- GETTER --
-     * Returns the normal of the plane associated with this face.
-     *
-     * @return the planar normal
-     */
     @Getter
-    private Vector3d normal;
+    protected final Vector3d normal;
 
     public Face() {
         normal = new Vector3d();
@@ -82,10 +76,10 @@ public class Face {
     }
 
     public static Face create(Vertex[] vtxArray, int[] indices) {
-        Face face = new Face();
+        var face = new Face();
         HalfEdge hePrev = null;
-        for (int i = 0; i < indices.length; i++) {
-            HalfEdge he = new HalfEdge(vtxArray[indices[i]], face);
+        for (int index : indices) {
+            var he = new HalfEdge(vtxArray[index], face);
             if (hePrev != null) {
                 he.setPrev(hePrev);
                 hePrev.setNext(he);
@@ -117,10 +111,10 @@ public class Face {
      *           third vertex
      */
     public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2, double minArea) {
-        Face face = new Face();
-        HalfEdge he0 = new HalfEdge(v0, face);
-        HalfEdge he1 = new HalfEdge(v1, face);
-        HalfEdge he2 = new HalfEdge(v2, face);
+        var face = new Face();
+        var he0 = new HalfEdge(v0, face);
+        var he1 = new HalfEdge(v1, face);
+        var he2 = new HalfEdge(v2, face);
 
         he0.prev = he2;
         he0.next = he1;
@@ -143,7 +137,7 @@ public class Face {
             centroid.add(he.head().pnt);
             he = he.next;
         } while (he != he0);
-        centroid.mul(1 / (double) numVerts);
+        centroid.mul(1 / (double) numVertices);
     }
 
     public void computeNormal(Vector3d normal) {
@@ -159,7 +153,7 @@ public class Face {
 
         normal.zero();
 
-        numVerts = 2;
+        numVertices = 2;
 
         while (he2 != he0) {
             double d1x = d2x;
@@ -177,7 +171,7 @@ public class Face {
 
             he1 = he2;
             he2 = he2.next;
-            numVerts++;
+            numVertices++;
         }
         area = normal.length();
         normal.mul(1 / area);
@@ -347,7 +341,7 @@ public class Face {
     }
 
     public int numVertices() {
-        return numVerts;
+        return numVertices;
     }
 
     public void triangulate(FaceList newFaces, double minArea) {
@@ -428,9 +422,9 @@ public class Face {
             numv++;
             he = he.next;
         } while (he != he0);
-        if (numv != numVerts) {
+        if (numv != numVertices) {
             throw new IllegalStateException(
-                    "face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
+                    "face " + getVertexString() + " numVerts=" + numVertices + " should be " + numv);
         }
     }
 
@@ -488,7 +482,7 @@ public class Face {
         double maxd = 0;
         var numv = 0;
 
-        if (numVerts < 3) {
+        if (numVertices < 3) {
             throw new IllegalStateException("degenerate face: " + getVertexString());
         }
         do {
@@ -520,9 +514,9 @@ public class Face {
             hedge = hedge.next;
         } while (hedge != he0);
 
-        if (numv != numVerts) {
+        if (numv != numVertices) {
             throw new IllegalStateException(
-                    "face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
+                    "face " + getVertexString() + " numVerts=" + numVertices + " should be " + numv);
         }
     }
 }
