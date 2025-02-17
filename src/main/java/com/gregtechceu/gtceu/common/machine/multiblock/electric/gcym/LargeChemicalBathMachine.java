@@ -54,8 +54,8 @@ public class LargeChemicalBathMachine extends WorkableElectricMultiblockMachine 
     }
 
     protected void saveOffsets() {
-        Direction up = RelativeDirection.UP.getRelativeFacing(getFrontFacing(), getUpwardsFacing(), isFlipped());
-        Direction back = getFrontFacing().getOpposite();
+        var up = RelativeDirection.UP.getRelativeFacing(getFrontFacing(), getUpwardsFacing(), isFlipped());
+        var back = getFrontFacing().getOpposite();
         Direction clockWise;
         Direction counterClockWise;
         if (up == Direction.UP || up == Direction.DOWN) {
@@ -66,8 +66,8 @@ public class LargeChemicalBathMachine extends WorkableElectricMultiblockMachine 
             counterClockWise = Direction.DOWN;
         }
 
-        BlockPos pos = getPos();
-        BlockPos center = pos.relative(up);
+        var pos = getPos();
+        var center = pos.relative(up);
 
         for (int i = 0; i < 5; i++) {
             center = center.relative(back);

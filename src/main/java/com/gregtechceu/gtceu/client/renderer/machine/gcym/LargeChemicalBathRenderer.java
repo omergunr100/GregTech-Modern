@@ -1,37 +1,28 @@
 package com.gregtechceu.gtceu.client.renderer.machine.gcym;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
-import com.gregtechceu.gtceu.client.renderer.block.FluidBlockRenderer;
+import com.gregtechceu.gtceu.client.renderer.GTFluidRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.WorkableCasingMachineRenderer;
 import com.gregtechceu.gtceu.client.util.RenderUtil;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.gcym.LargeChemicalBathMachine;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.client.RenderTypeHelper;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
 public class LargeChemicalBathRenderer extends WorkableCasingMachineRenderer {
 
-    private final FluidBlockRenderer fluidBlockRenderer;
-    private Fluid cachedFluid;
+    private final GTFluidRenderer fluidRenderer;
     private ResourceLocation cachedRecipe;
 
     public LargeChemicalBathRenderer(ResourceLocation baseCasing, ResourceLocation workableModel) {
         super(baseCasing, workableModel);
 
-        fluidBlockRenderer = FluidBlockRenderer.Builder.create()
-                .setFaceOffset(-0.125f)
-                .setForcedLight(LightTexture.FULL_BRIGHT)
-                .getRenderer();
+        fluidRenderer = new GTFluidRenderer().lightLevelOverride(LightTexture.FULL_BRIGHT);
     }
 
     @Override
@@ -57,36 +48,34 @@ public class LargeChemicalBathRenderer extends WorkableCasingMachineRenderer {
         if (!ConfigHolder.INSTANCE.client.renderer.renderFluids) return;
         if (blockEntity instanceof MetaMachineBlockEntity mm) {
             if (mm.metaMachine instanceof LargeChemicalBathMachine lcb) {
-                var lastRecipe = lcb.recipeLogic.getLastRecipe();
-                if (lastRecipe == null) {
-                    cachedRecipe = null;
-                    cachedFluid = null;
-                } else if (lcb.getOffsetTimer() % 20 == 0 || lastRecipe.id != cachedRecipe) {
-                    cachedRecipe = lastRecipe.id;
-                    if (lcb.isActive()) {
-                        cachedFluid = RenderUtil.getRecipeFluidToRender(lastRecipe);
-                    } else {
-                        cachedFluid = null;
-                    }
-                }
-
-                if (cachedFluid == null) {
+                if (lcb.getFluidBlockOffsets().isEmpty()) {
+                    fluidRenderer.clearHull();
                     return;
                 }
 
-                stack.pushPose();
-                var pose = stack.last().pose();
+                if (fluidRenderer.hull() == null) {
+                    fluidRenderer.prepareVertexData(lcb.getFluidBlockOffsets());
+                }
 
-                var fluidRenderType = ItemBlockRenderTypes.getRenderLayer(cachedFluid.defaultFluidState());
-                var consumer = buffer.getBuffer(RenderTypeHelper.getEntityRenderType(fluidRenderType, false));
+                var lastRecipe = lcb.recipeLogic.getLastRecipe();
+                if (lastRecipe == null) {
+                    cachedRecipe = null;
+                    fluidRenderer.fluid(null);
+                } else if (lcb.getOffsetTimer() % 20 == 0 || lastRecipe.id != cachedRecipe) {
+                    cachedRecipe = lastRecipe.id;
+                    if (lcb.isActive()) {
+                        fluidRenderer.fluid(RenderUtil.getRecipeFluidToRender(lastRecipe));
+                    } else {
+                        fluidRenderer.fluid(null);
+                    }
+                }
 
-                var up = RelativeDirection.UP.getRelativeFacing(lcb.getFrontFacing(), lcb.getUpwardsFacing(),
-                        lcb.isFlipped());
-                if (up.getAxis() != Direction.Axis.Y) up = up.getOpposite();
-                fluidBlockRenderer.drawPlane(up, lcb.getFluidBlockOffsets(), pose, consumer, cachedFluid,
-                        RenderUtil.FluidTextureType.STILL, combinedOverlay, lcb.getPos());
+                if (fluidRenderer.fluid() == null) {
+                    return;
+                }
 
-                stack.popPose();
+                fluidRenderer.draw(stack, buffer, RenderUtil.FluidTextureType.STILL::map, combinedLight,
+                        combinedOverlay, Byte.MAX_VALUE);
             }
         }
     }
