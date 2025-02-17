@@ -1,11 +1,7 @@
 package com.gregtechceu.gtceu.client.renderer;
 
 import com.gregtechceu.gtceu.api.quickhull3d.QuickHull3D;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -17,6 +13,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.joml.Vector3d;
 
 import java.util.Arrays;
@@ -53,14 +55,15 @@ public class GTFluidRenderer {
 
     @OnlyIn(Dist.CLIENT)
     public void draw(PoseStack stack, MultiBufferSource bufferSource,
-                     Function<IClientFluidTypeExtensions, TextureAtlasSprite> spriteGetter, int lightOverlay, int combinedOverlay, byte opacity) {
+                     Function<IClientFluidTypeExtensions, TextureAtlasSprite> spriteGetter, int lightOverlay,
+                     int combinedOverlay, byte opacity) {
         var fluidInfo = IClientFluidTypeExtensions.of(fluid);
         var sprite = spriteGetter.apply(fluidInfo);
         var u0 = sprite.getU0();
         var u1 = sprite.getU1();
         var v0 = sprite.getV0();
         var v1 = sprite.getV1();
-        
+
         var layer = ItemBlockRenderTypes.getRenderLayer(fluid.defaultFluidState());
         var consumer = bufferSource.getBuffer(RenderTypeHelper.getEntityRenderType(layer, false));
         var color = fluidInfo.getTintColor();
@@ -70,10 +73,10 @@ public class GTFluidRenderer {
         var b = FastColor.ARGB32.blue(color);
         var a = FastColor.ARGB32.alpha(color);
         var lightLevel = lightLevelOverride != -1 ? lightLevelOverride : lightOverlay;
-        
+
         var idx = hull.getFacesIdx();
         var faces = hull.getFaces();
-        
+
         var mc = Minecraft.getInstance();
         var camPos = new Vector3d(mc.cameraEntity.getX(), mc.cameraEntity.getY(), mc.cameraEntity.getZ());
         var subResult = new Vector3d();
@@ -82,15 +85,15 @@ public class GTFluidRenderer {
             var face = faces.get(i);
             var n = face.getNormal();
             var sign = Math.signum(n.dot(camPos.sub(face.getCentroid(), subResult)));
-            drawQuad(consumer, r, g, b, a, u0, u1, v0, v1, lightLevel, combinedOverlay, idx[i], 
+            drawQuad(consumer, r, g, b, a, u0, u1, v0, v1, lightLevel, combinedOverlay, idx[i],
                     (float) (sign * n.x), (float) (sign * n.y), (float) (sign * n.z));
         }
         stack.popPose();
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void drawQuad(VertexConsumer consumer, 
-                         int r, int g, int b, int a, float u0, float u1, float v0, float v1, 
+    public void drawQuad(VertexConsumer consumer,
+                         int r, int g, int b, int a, float u0, float u1, float v0, float v1,
                          int lightOverlay, int combinedOverlay, int[] vtxIdx, float nX, float nY, float nZ) {
         var vtx = hull.getVertices();
         var v = vtx[vtxIdx[0]];
