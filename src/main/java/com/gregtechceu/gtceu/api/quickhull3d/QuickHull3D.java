@@ -54,7 +54,7 @@ import java.util.*;
  * A hull is constructed by providing a set of points to either a constructor or
  * a {@link #build(Vector3d[]) build} method. After the hull is built, its
  * vertices and faces can be retrieved using {@link #getVertices() getVertices}
- * and {@link #getFaces() getFaces}. A typical usage might look like this:
+ * and {@link #getFacesIdx() getFacesIdx}. A typical usage might look like this:
  *
  * <pre>
  * // x y z coordinates of 6 points
@@ -179,10 +179,11 @@ public class QuickHull3D {
 
     private final Face[] discardedFaces = new Face[3];
 
-    private final Vertex[] maxVtxs = new Vertex[3];
+    private final Vertex[] maxVerts = new Vertex[3];
 
-    private final Vertex[] minVtxs = new Vertex[3];
+    private final Vertex[] minVerts = new Vertex[3];
 
+    @Getter
     protected List<Face> faces = new ArrayList<>(16);
 
     protected List<HalfEdge> horizon = new ArrayList<>(16);
@@ -438,7 +439,7 @@ public class QuickHull3D {
         var min = new Vector3d();
 
         for (int i = 0; i < 3; i++) {
-            maxVtxs[i] = minVtxs[i] = pointBuffer[0];
+            maxVerts[i] = minVerts[i] = pointBuffer[0];
         }
         max.set(pointBuffer[0].pnt);
         min.set(pointBuffer[0].pnt);
@@ -447,24 +448,24 @@ public class QuickHull3D {
             var pnt = pointBuffer[i].pnt;
             if (pnt.x > max.x) {
                 max.x = pnt.x;
-                maxVtxs[0] = pointBuffer[i];
+                maxVerts[0] = pointBuffer[i];
             } else if (pnt.x < min.x) {
                 min.x = pnt.x;
-                minVtxs[0] = pointBuffer[i];
+                minVerts[0] = pointBuffer[i];
             }
             if (pnt.y > max.y) {
                 max.y = pnt.y;
-                maxVtxs[1] = pointBuffer[i];
+                maxVerts[1] = pointBuffer[i];
             } else if (pnt.y < min.y) {
                 min.y = pnt.y;
-                minVtxs[1] = pointBuffer[i];
+                minVerts[1] = pointBuffer[i];
             }
             if (pnt.z > max.z) {
                 max.z = pnt.z;
-                maxVtxs[2] = pointBuffer[i];
+                maxVerts[2] = pointBuffer[i];
             } else if (pnt.z < min.z) {
                 min.z = pnt.z;
-                minVtxs[2] = pointBuffer[i];
+                minVerts[2] = pointBuffer[i];
             }
         }
 
@@ -487,7 +488,7 @@ public class QuickHull3D {
         int imax = 0;
 
         for (int i = 0; i < 3; i++) {
-            double diff = maxVtxs[i].pnt.get(i) - minVtxs[i].pnt.get(i);
+            double diff = maxVerts[i].pnt.get(i) - minVerts[i].pnt.get(i);
             if (diff > max) {
                 max = diff;
                 imax = i;
@@ -501,8 +502,8 @@ public class QuickHull3D {
         // set first two vertices to be those with the greatest
         // one dimensional separation
 
-        vtx[0] = maxVtxs[imax];
-        vtx[1] = minVtxs[imax];
+        vtx[0] = maxVerts[imax];
+        vtx[1] = minVerts[imax];
 
         // set third vertex to be the vertex farthest from
         // the line between vtx0 and vtx1
@@ -606,7 +607,7 @@ public class QuickHull3D {
      *
      * @return array of vertex points
      * @see QuickHull3D#getVertices(double[])
-     * @see QuickHull3D#getFaces()
+     * @see QuickHull3D#getFacesIdx()
      */
     public Vector3d[] getVertices() {
         var vertices = new Vector3d[numVertices];
@@ -625,7 +626,7 @@ public class QuickHull3D {
      *               vertices.
      * @return the number of vertices
      * @see QuickHull3D#getVertices()
-     * @see QuickHull3D#getFaces()
+     * @see QuickHull3D#getFacesIdx()
      */
     public int getVertices(double[] coords) {
         for (int i = 0; i < numVertices; i++) {
@@ -664,15 +665,15 @@ public class QuickHull3D {
      * Each face is represented by an integer array which gives the indices of
      * the vertices. These indices are numbered relative to the hull vertices,
      * are zero-based, and are arranged counter-clockwise. More control over the
-     * index format can be obtained using {@link #getFaces(int)
-     * getFaces(indexFlags)}.
+     * index format can be obtained using {@link #getFacesIdx(int)
+     * getFacesIdx(indexFlags)}.
      *
      * @return array of integer arrays, giving the vertex indices for each face.
      * @see QuickHull3D#getVertices()
-     * @see QuickHull3D#getFaces(int)
+     * @see QuickHull3D#getFacesIdx(int)
      */
-    public int[][] getFaces() {
-        return getFaces(0);
+    public int[][] getFacesIdx() {
+        return getFacesIdx(0);
     }
 
     /**
@@ -691,7 +692,7 @@ public class QuickHull3D {
      * @return array of integer arrays, giving the vertex indices for each face.
      * @see QuickHull3D#getVertices()
      */
-    public int[][] getFaces(int indexFlags) {
+    public int[][] getFacesIdx(int indexFlags) {
         var allFaces = new int[faces.size()][];
         var k = 0;
         for (var face : faces) {
