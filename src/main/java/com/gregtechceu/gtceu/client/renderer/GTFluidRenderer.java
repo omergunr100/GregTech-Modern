@@ -1,5 +1,6 @@
 package com.gregtechceu.gtceu.client.renderer;
 
+import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.quickhull3d.QuickHull3D;
 
 import net.minecraft.client.Minecraft;
@@ -41,7 +42,9 @@ public class GTFluidRenderer {
     @Setter
     protected double faceOffset = 0;
 
-    public GTFluidRenderer() {}
+    public GTFluidRenderer() {
+        this.hull = new QuickHull3D();
+    }
 
     public GTFluidRenderer(Fluid fluid, BlockPos... positions) {
         this.fluid = fluid;
@@ -64,6 +67,18 @@ public class GTFluidRenderer {
             }
         }).map(v -> (Vector3d) v).collect(Collectors.toSet());
         this.hull = new QuickHull3D(points.toArray(Vector3d[]::new));
+        for (var face : hull.getFaces()) {
+            GTCEu.LOGGER.info("Face:");
+            GTCEu.LOGGER.info("Normal: {}", face.getNormal());
+            GTCEu.LOGGER.info("Vertices: {}", face.numVertices());
+            var idx = new int[face.numVertices()];
+            face.getVertexIndices(idx);
+            var vertices = hull.getVertices();
+            for (var ind : idx) {
+                GTCEu.LOGGER.info("Vertex {}: {}", ind, vertices[ind]);
+            }
+            GTCEu.LOGGER.info("--------------");
+        }
     }
 
     public void clearHull() {

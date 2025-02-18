@@ -123,7 +123,7 @@ import java.util.*;
  * triangulation, {@link #check check} will fail (the same behavior is observed
  * with triangulated output from <a href=http://www.qhull.org>qhull</a>).
  * <h3>Degenerate Input</h3>It is assumed that the input points are
- * non-degenerate in that they are not coincident, colinear, or colplanar, and
+ * non-degenerate in that they are not coincident, collinear, or colplanar, and
  * thus the convex hull has a non-zero volume. If the input points are detected
  * to be degenerate within the {@link #getDistanceTolerance() distance
  * tolerance}, an IllegalArgumentException will be thrown.
@@ -213,13 +213,11 @@ public class QuickHull3D {
     private static final double DOUBLE_PREC = 2.2204460492503131e-16;
 
     /**
-     * Returns the distance tolerance that was used for the most recently
-     * computed hull. The distance tolerance is used to determine when faces are
-     * unambiguously convex with respect to each other, and when points are
-     * unambiguously above or below a face plane, in the presence of <a
-     * href=#distTol>numerical imprecision</a>. Normally, this tolerance is
-     * computed automatically for each set of input points, but it can be set
-     * explicitly by the application.
+     * Returns the distance tolerance that was used for the most recently computed hull. The distance tolerance is used
+     * to determine when faces are unambiguously convex with respect to each other, and when points are unambiguously
+     * above or below a face plane, in the presence of <a href=#distTol>numerical imprecision</a>. Normally, this
+     * tolerance is computed automatically for each set of input points, but it can be set explicitly by the
+     * application.
      *
      * @return distance tolerance
      * @see QuickHull3D#setExplicitTolerance
@@ -265,15 +263,13 @@ public class QuickHull3D {
     }
 
     /**
-     * Creates a convex hull object and initializes it to the convex hull of a
-     * set of points whose coordinates are given by an array of doubles.
+     * Creates a convex hull object and initializes it to the convex hull of a set of points whose coordinates are given
+     * by an array of doubles.
      *
-     * @param coords
-     *               x, y, and z coordinates of each input point. The length of
-     *               this array will be three times the number of input points.
-     * @throws IllegalArgumentException
-     *                                  the number of input points is less than four, or the points
-     *                                  appear to be coincident, collinear, or coplanar.
+     * @param coords x, y, and z coordinates of each input point.
+     *               The length of this array will be three times the number of input points.
+     * @throws IllegalArgumentException the number of input points is less than four, or the points appear to be
+     *                                  coincident, collinear, or coplanar.
      */
     public QuickHull3D(double[] coords) throws IllegalArgumentException {
         build(coords, coords.length / 3);
@@ -283,11 +279,9 @@ public class QuickHull3D {
      * Creates a convex hull object and initializes it to the convex hull of a
      * set of points.
      *
-     * @param points
-     *               input points.
-     * @throws IllegalArgumentException
-     *                                  the number of input points is less than four, or the points
-     *                                  appear to be coincident, colinear, or coplanar.
+     * @param points input points.
+     * @throws IllegalArgumentException the number of input points is less than four, or the points appear to be
+     *                                  coincident, collinear, or coplanar.
      */
     public QuickHull3D(Vector3d[] points) throws IllegalArgumentException {
         build(points, points.length);
@@ -305,54 +299,46 @@ public class QuickHull3D {
     }
 
     /**
-     * Constructs the convex hull of a set of points whose coordinates are given
-     * by an array of doubles.
+     * Constructs the convex hull of a set of points whose coordinates are given by an array of doubles.
      *
-     * @param coords
-     *               x, y, and z coordinates of each input point. The length of
-     *               this array will be three times the number of input points.
-     * @throws IllegalArgumentException
-     *                                  the number of input points is less than four, or the points
-     *                                  appear to be coincident, colinear, or coplanar.
+     * @param coords x, y, and z coordinates of each input point. The length of this array will be three times the
+     *               number of input points.
+     * @throws IllegalArgumentException the number of input points is less than four, or the points appear to be
+     *                                  coincident, collinear, or coplanar.
      */
     public void build(double[] coords) throws IllegalArgumentException {
         build(coords, coords.length / 3);
     }
 
     /**
-     * Constructs the convex hull of a set of points whose coordinates are given
-     * by an array of doubles.
+     * Constructs the convex hull of a set of points whose coordinates are given by an array of doubles.
      *
-     * @param coords
-     *               x, y, and z coordinates of each input point. The length of
-     *               this array must be at least three times <code>nump</code>.
-     * @param nump
-     *               number of input points
-     * @throws IllegalArgumentException
-     *                                  the number of input points is less than four or greater than
-     *                                  1/3 the length of <code>coords</code>, or the points appear
-     *                                  to be coincident, colinear, or coplanar.
+     * @param coords x, y, and z coordinates of each input point. The length of this array must be at least three times
+     *               <code>points</code>.
+     * @param points number of input points
+     * @throws IllegalArgumentException the number of input points is less than four or greater than 1/3 the length of
+     *                                  <code>coords</code>, or the points appear to be coincident, collinear, or
+     *                                  coplanar.
      */
-    public void build(double[] coords, int nump) throws IllegalArgumentException {
-        if (nump < 4) {
+    public void build(double[] coords, int points) throws IllegalArgumentException {
+        var length = coords.length;
+        if (points < 4) {
             throw new IllegalArgumentException("Less than four input points specified");
         }
-        if (coords.length / 3 < nump) {
+        if (length / 3 < points) {
             throw new IllegalArgumentException("Coordinate array too small for specified number of points");
         }
-        initBuffers(nump);
-        setPoints(coords, nump);
+        initBuffers(points);
+        setPoints(coords, points);
         buildHull();
     }
 
     /**
      * Constructs the convex hull of a set of points.
      *
-     * @param points
-     *               input points
-     * @throws IllegalArgumentException
-     *                                  the number of input points is less than four, or the points
-     *                                  appear to be coincident, colinear, or coplanar.
+     * @param points input points
+     * @throws IllegalArgumentException the number of input points is less than four, or the points appear to be
+     *                                  coincident, collinear, or coplanar.
      */
     public void build(Vector3d[] points) throws IllegalArgumentException {
         build(points, points.length);
@@ -361,31 +347,27 @@ public class QuickHull3D {
     /**
      * Constructs the convex hull of a set of points.
      *
-     * @param points
-     *               input points
-     * @param nump
-     *               number of input points
-     * @throws IllegalArgumentException
-     *                                  the number of input points is less than four or greater then
-     *                                  the length of <code>points</code>, or the points appear to be
-     *                                  coincident, colinear, or coplanar.
+     * @param points input points
+     * @param count  number of input points
+     * @throws IllegalArgumentException the number of input points is less than four or greater than the length of
+     *                                  <code>points</code>, or the points appear to be coincident, collinear, or
+     *                                  coplanar.
      */
-    public void build(Vector3d[] points, int nump) throws IllegalArgumentException {
-        if (nump < 4) {
+    public void build(Vector3d[] points, int count) throws IllegalArgumentException {
+        if (count < 4) {
             throw new IllegalArgumentException("Less than four input points specified");
         }
-        if (points.length < nump) {
+        if (points.length < count) {
             throw new IllegalArgumentException("Point array too small for specified number of points");
         }
-        initBuffers(nump);
-        setPoints(points, nump);
+        initBuffers(count);
+        setPoints(points, count);
         buildHull();
     }
 
     /**
-     * Triangulates any non-triangular hull faces. In some cases, due to
-     * precision issues, the resulting triangles may be very thin or small, and
-     * hence appear to be non-convex (this same limitation is present in <a
+     * Triangulates any non-triangular hull faces. In some cases, due to precision issues, the resulting triangles may
+     * be very thin or small, and hence appear to be non-convex (this same limitation is present in <a
      * href=http://www.qhull.org>qhull</a>).
      */
     public void triangulate() {
@@ -402,12 +384,12 @@ public class QuickHull3D {
         }
     }
 
-    protected void initBuffers(int nump) {
-        if (pointBuffer.length < nump) {
-            Vertex[] newBuffer = new Vertex[nump];
-            vertexPointIndices = new int[nump];
+    protected void initBuffers(int count) {
+        if (pointBuffer.length < count) {
+            var newBuffer = new Vertex[count];
+            vertexPointIndices = new int[count];
             System.arraycopy(pointBuffer, 0, newBuffer, 0, pointBuffer.length);
-            for (int i = pointBuffer.length; i < nump; i++) {
+            for (int i = pointBuffer.length; i < count; i++) {
                 newBuffer[i] = new Vertex();
             }
             pointBuffer = newBuffer;
@@ -415,21 +397,21 @@ public class QuickHull3D {
         faces.clear();
         claimed.clear();
         numFaces = 0;
-        numPoints = nump;
+        numPoints = count;
     }
 
-    protected void setPoints(double[] coords, int nump) {
-        for (int i = 0; i < nump; i++) {
+    protected void setPoints(double[] coords, int count) {
+        for (int i = 0; i < count; i++) {
             var vtx = pointBuffer[i];
             vtx.pnt.set(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2]);
             vtx.index = i;
         }
     }
 
-    protected void setPoints(Vector3d[] pnts, int nump) {
-        for (int i = 0; i < nump; i++) {
+    protected void setPoints(Vector3d[] points, int count) {
+        for (int i = 0; i < count; i++) {
             var vtx = pointBuffer[i];
-            vtx.pnt.set(pnts[i]);
+            vtx.pnt.set(points[i]);
             vtx.index = i;
         }
     }
@@ -526,7 +508,7 @@ public class QuickHull3D {
             }
         }
         if (Math.sqrt(maxSqr) <= 100 * tolerance) {
-            throw new IllegalArgumentException("Input points appear to be colinear");
+            throw new IllegalArgumentException("Input points appear to be collinear");
         }
         nrml.normalize();
 
@@ -1059,23 +1041,17 @@ public class QuickHull3D {
     }
 
     /**
-     * Checks the correctness of the hull. This is done by making sure that no
-     * faces are non-convex and that no points are outside any face. These tests
-     * are performed using the distance tolerance <i>tol</i>. Faces are
-     * considered non-convex if any edge is non-convex, and an edge is
-     * non-convex if the centroid of either adjoining face is more than
-     * <i>tol</i> above the plane of the other face. Similarly, a point is
-     * considered outside a face if its distance to that face's plane is more
-     * than 10 times <i>tol</i>.
+     * Checks the correctness of the hull. This is done by making sure that no faces are non-convex and that no points
+     * are outside any face. These tests are performed using the distance tolerance <i>tol</i>. Faces are considered
+     * non-convex if any edge is non-convex, and an edge is non-convex if the centroid of either adjoining face is more
+     * than <i>tol</i> above the plane of the other face. Similarly, a point is considered outside a face if its
+     * distance to that face's plane is more than 10 times <i>tol</i>.
      * <p>
-     * If the hull has been {@link #triangulate triangulated}, then this routine
-     * may fail if some of the resulting triangles are very small or thin.
+     * If the hull has been {@link #triangulate triangulated}, then this routine may fail if some of the resulting
+     * triangles are very small or thin.
      *
-     * @param ps
-     *            print stream for diagnostic messages; may be set to
-     *            <code>null</code> if no messages are desired.
-     * @param tol
-     *            distance tolerance
+     * @param ps  print stream for diagnostic messages; may be set to <code>null</code> if no messages are desired.
+     * @param tol distance tolerance
      * @return true if the hull is valid
      * @see QuickHull3D#check(PrintStream)
      */

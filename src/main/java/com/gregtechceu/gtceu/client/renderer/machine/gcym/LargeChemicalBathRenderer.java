@@ -48,7 +48,7 @@ public class LargeChemicalBathRenderer extends WorkableCasingMachineRenderer {
         if (!ConfigHolder.INSTANCE.client.renderer.renderFluids) return;
         if (blockEntity instanceof MetaMachineBlockEntity mm) {
             if (mm.metaMachine instanceof LargeChemicalBathMachine lcb) {
-                if (lcb.getFluidBlockOffsets().isEmpty()) {
+                if (lcb.getFluidBlockOffsets().isEmpty() && fluidRenderer.hull() == null) {
                     fluidRenderer.clearHull();
                     return;
                 }
@@ -59,14 +59,14 @@ public class LargeChemicalBathRenderer extends WorkableCasingMachineRenderer {
 
                 var lastRecipe = lcb.recipeLogic.getLastRecipe();
                 if (lastRecipe == null) {
-                    cachedRecipe = null;
-                    fluidRenderer.fluid(null);
+                    // cachedRecipe = null;
+                    // fluidRenderer.fluid(null);
                 } else if (lcb.getOffsetTimer() % 20 == 0 || lastRecipe.id != cachedRecipe) {
                     cachedRecipe = lastRecipe.id;
                     if (lcb.isActive()) {
                         fluidRenderer.fluid(RenderUtil.getRecipeFluidToRender(lastRecipe));
                     } else {
-                        fluidRenderer.fluid(null);
+                        // fluidRenderer.fluid(null);
                     }
                 }
 
@@ -75,7 +75,7 @@ public class LargeChemicalBathRenderer extends WorkableCasingMachineRenderer {
                 }
 
                 fluidRenderer.draw(stack, buffer, RenderUtil.FluidTextureType.STILL::map, combinedLight,
-                        combinedOverlay, Byte.MAX_VALUE);
+                        combinedOverlay, (byte) 96);
             }
         }
     }

@@ -68,8 +68,15 @@ public class LargeChemicalBathMachine extends WorkableElectricMultiblockMachine 
 
         var pos = getPos();
         var center = pos.relative(up);
-
         for (int i = 0; i < 5; i++) {
+            center = center.relative(back);
+            fluidBlockOffsets.add(center.subtract(pos));
+            fluidBlockOffsets.add(center.relative(clockWise).subtract(pos));
+            fluidBlockOffsets.add(center.relative(counterClockWise).subtract(pos));
+        }
+
+        center = pos.relative(back);
+        for (int i = 0; i < 3; i++) {
             center = center.relative(back);
             fluidBlockOffsets.add(center.subtract(pos));
             fluidBlockOffsets.add(center.relative(clockWise).subtract(pos));
