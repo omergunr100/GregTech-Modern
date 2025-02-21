@@ -262,12 +262,6 @@ public class ConfigHolder {
             @Configurable.Comment({ "How vertically far away from the anchor to place the buttons", "Default: 0" })
             public int yOffset = 0;
 
-            @Configurable
-            @Configurable.Comment({
-                    "Whether to put buttons on a separate toolbar on the right instead of the map type toolbar in JourneyMap.",
-                    "Default: true" })
-            public boolean rightToolbar = true;
-
             public static class Toggle {
 
                 @Configurable
