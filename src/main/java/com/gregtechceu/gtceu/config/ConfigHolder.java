@@ -251,8 +251,8 @@ public class ConfigHolder {
             public Anchor buttonAnchor = Anchor.BOTTOM_LEFT;
 
             @Configurable
-            @Configurable.Comment({ "Which direction the buttons will go", "Default: \"HORIZONTAL\"" })
-            public Direction direction = Direction.HORIZONTAL;
+            @Configurable.Comment({ "Which direction the buttons will go", "Default: \"VERTICAL\"" })
+            public Direction direction = Direction.VERTICAL;
 
             @Configurable
             @Configurable.Comment({ "How horizontally far away from the anchor to place the buttons", "Default: 20" })
