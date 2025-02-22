@@ -1,5 +1,6 @@
 package com.gregtechceu.gtceu.common.machine.owner;
 
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -37,7 +38,7 @@ public final class FTBOwner implements IMachineOwner {
     public void load(CompoundTag tag) {
         try {
             if (tag.contains("teamUUID"))
-                this.team = FTBTeamsAPIImpl.INSTANCE.getManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
+                this.team = FTBTeamsAPI.api().getManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
             else this.team = null;
         } catch (NullPointerException e) {
             this.team = null;
@@ -49,7 +50,7 @@ public final class FTBOwner implements IMachineOwner {
     @Override
     public boolean isPlayerInTeam(Player player) {
         if (player.getUUID().equals(this.playerUUID)) return true;
-        if (FTBTeamsAPIImpl.INSTANCE.getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID)) return true;
+        if (FTBTeamsAPI.api().getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID)) return true;
 
         return false;
     }
