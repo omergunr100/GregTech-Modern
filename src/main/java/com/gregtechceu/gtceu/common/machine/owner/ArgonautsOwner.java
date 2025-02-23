@@ -1,11 +1,11 @@
 package com.gregtechceu.gtceu.common.machine.owner;
 
-import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
+import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
 import earth.terrarium.argonauts.api.guild.Guild;
 import lombok.Getter;
 
