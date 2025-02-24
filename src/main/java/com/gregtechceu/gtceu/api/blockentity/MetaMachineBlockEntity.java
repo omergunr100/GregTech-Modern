@@ -144,24 +144,23 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
 
     @SuppressWarnings({ "UnstableApiUsage", "deprecation" })
     public IMachineOwner getOwner() {
-        var uuid = getOwnerUUID();
-        if (uuid == null) {
+        if (ownerUUID == null) {
             return null;
         }
         if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
-            Optional<Team> team = FTBTeamsAPI.api().getManager().getTeamForPlayerID(uuid);
+            Optional<Team> team = FTBTeamsAPI.api().getManager().getTeamForPlayerID(ownerUUID);
             if (team.isPresent()) {
-                return new FTBOwner(team.get(), uuid);
+                return new FTBOwner(team.get(), ownerUUID);
             }
         }
         if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            var guild = GuildApi.API.get(server, uuid);
+            var guild = GuildApi.API.get(server, ownerUUID);
             if (guild != null) {
-                return new ArgonautsOwner(guild, uuid);
+                return new ArgonautsOwner(guild, ownerUUID);
             }
         }
-        return new PlayerOwner(uuid);
+        return new PlayerOwner(ownerUUID);
     }
 
     public PlayerOwner getPlayerOwner() {
@@ -355,9 +354,8 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        var uuid = getOwnerUUID();
-        if (uuid != null) {
-            tag.putUUID("ownerUUID", uuid);
+        if (ownerUUID != null) {
+            tag.putUUID("ownerUUID", ownerUUID);
         }
     }
 
@@ -366,9 +364,9 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
         TagFixer.fixFluidTags(tag);
         super.load(tag);
         if (tag.contains("ownerUUID")) {
-            setOwnerUUID(tag.getUUID("ownerUUID"));
+            ownerUUID = tag.getUUID("ownerUUID");
         } else {
-            this.ownerUUID = null;
+            ownerUUID = null;
         }
     }
 }
