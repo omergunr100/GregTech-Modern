@@ -45,10 +45,9 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 import appeng.api.networking.IInWorldGridNodeHost;
 import appeng.capabilities.Capabilities;
-import dev.ftb.mods.ftbteams.FTBTeamsAPIImpl;
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
-import earth.terrarium.argonauts.api.guild.Guild;
-import earth.terrarium.argonauts.common.handlers.guild.GuildHandler;
+import earth.terrarium.argonauts.api.guild.GuildApi;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -143,22 +142,23 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
         }
     }
 
+    @SuppressWarnings({ "UnstableApiUsage", "deprecation" })
     public IMachineOwner getOwner() {
         var uuid = getOwnerUUID();
         if (uuid == null) {
             return null;
         }
         if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
-            Optional<Team> team = FTBTeamsAPIImpl.INSTANCE.getManager().getTeamForPlayerID(uuid);
+            Optional<Team> team = FTBTeamsAPI.api().getManager().getTeamForPlayerID(uuid);
             if (team.isPresent()) {
                 return new FTBOwner(team.get(), uuid);
             }
         }
         if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            Guild guild = GuildHandler.read(server).get(server.getPlayerList().getPlayer(uuid));
+            var guild = GuildApi.API.get(server, uuid);
             if (guild != null) {
-                return new ArgonautsOwner(guild, uuid, server);
+                return new ArgonautsOwner(guild, uuid);
             }
         }
         return new PlayerOwner(uuid);

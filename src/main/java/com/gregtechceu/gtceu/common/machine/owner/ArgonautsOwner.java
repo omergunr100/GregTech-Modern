@@ -5,8 +5,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
-import earth.terrarium.argonauts.api.guild.Guild;
 import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
+import earth.terrarium.argonauts.api.guild.Guild;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings({ "UnstableApiUsage", "removal" })
 @NoArgsConstructor
 @AllArgsConstructor
 public final class ArgonautsOwner implements IMachineOwner {

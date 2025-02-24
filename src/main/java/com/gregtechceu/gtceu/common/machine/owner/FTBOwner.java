@@ -51,8 +51,7 @@ public final class FTBOwner implements IMachineOwner {
 
     @Override
     public boolean isPlayerFriendly(Player player) {
-        if (team.getRankForPlayer(player.getUUID()).isAllyOrBetter()) return true;
-        return false;
+        return team.getRankForPlayer(player.getUUID()).isAllyOrBetter();
     }
 
     @Override
