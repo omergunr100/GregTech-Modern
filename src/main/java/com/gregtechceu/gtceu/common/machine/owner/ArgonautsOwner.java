@@ -2,12 +2,11 @@ package com.gregtechceu.gtceu.common.machine.owner;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import earth.terrarium.argonauts.api.guild.Guild;
-import earth.terrarium.argonauts.common.handlers.guild.GuildHandler;
+import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +22,6 @@ public final class ArgonautsOwner implements IMachineOwner {
     private Guild guild;
     @Getter
     private UUID playerUUID;
-    private MinecraftServer server;
 
     @Override
     public void save(CompoundTag tag) {
@@ -34,15 +32,13 @@ public final class ArgonautsOwner implements IMachineOwner {
     @Override
     public void load(CompoundTag tag) {
         this.playerUUID = tag.getUUID("playerUUID");
-        this.server = ServerLifecycleHooks.getCurrentServer();
-        var handler = GuildHandler.read(server);
-        this.guild = GuildHandler.API.get(server, tag.getUUID("guildUUID"));
+        this.guild = GuildClientApi.API.get(tag.getUUID("guildUUID"));
     }
 
     @Override
     public boolean isPlayerInTeam(Player player) {
         if (player.getUUID().equals(this.playerUUID)) return true;
-        var otherGuild = GuildHandler.read(server).get(server, player.getUUID());
+        var otherGuild = GuildClientApi.API.getPlayerGuild(player.getUUID());
         return otherGuild != null && otherGuild.equals(this.guild);
     }
 

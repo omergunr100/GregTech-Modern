@@ -5,7 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
-import dev.ftb.mods.ftbteams.FTBTeamsAPIImpl;
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +34,7 @@ public final class FTBOwner implements IMachineOwner {
     public void load(CompoundTag tag) {
         try {
             if (tag.contains("teamUUID"))
-                this.team = FTBTeamsAPIImpl.INSTANCE.getManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
+                this.team = FTBTeamsAPI.api().getManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
             else this.team = null;
         } catch (NullPointerException e) {
             this.team = null;
@@ -46,12 +46,13 @@ public final class FTBOwner implements IMachineOwner {
     @Override
     public boolean isPlayerInTeam(Player player) {
         if (player.getUUID().equals(this.playerUUID)) return true;
-        return FTBTeamsAPIImpl.INSTANCE.getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID);
+        return FTBTeamsAPI.api().getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID);
     }
 
     @Override
     public boolean isPlayerFriendly(Player player) {
-        return team.getRankForPlayer(player.getUUID()).isAllyOrBetter();
+        if (team.getRankForPlayer(player.getUUID()).isAllyOrBetter()) return true;
+        return false;
     }
 
     @Override
