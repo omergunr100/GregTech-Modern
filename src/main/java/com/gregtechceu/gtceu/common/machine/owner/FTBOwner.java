@@ -46,9 +46,7 @@ public final class FTBOwner implements IMachineOwner {
     @Override
     public boolean isPlayerInTeam(Player player) {
         if (player.getUUID().equals(this.playerUUID)) return true;
-        if (FTBTeamsAPIImpl.INSTANCE.getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID)) return true;
-
-        return false;
+        return FTBTeamsAPIImpl.INSTANCE.getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID);
     }
 
     @Override
