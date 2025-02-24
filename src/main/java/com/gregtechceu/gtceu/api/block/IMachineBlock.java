@@ -4,10 +4,6 @@ import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.common.machine.owner.ArgonautsOwner;
-import com.gregtechceu.gtceu.common.machine.owner.FTBOwner;
-import com.gregtechceu.gtceu.common.machine.owner.IMachineOwner;
-import com.gregtechceu.gtceu.common.machine.owner.PlayerOwner;
 
 import com.lowdragmc.lowdraglib.client.renderer.IBlockRendererProvider;
 
@@ -24,13 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
-import dev.ftb.mods.ftbteams.FTBTeamsAPIImpl;
-import dev.ftb.mods.ftbteams.api.Team;
-import earth.terrarium.argonauts.api.guild.Guild;
-import earth.terrarium.argonauts.common.handlers.guild.GuildHandler;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
 
 /**
  * @author KilaBash
@@ -90,20 +80,6 @@ public interface IMachineBlock extends IBlockRendererProvider, EntityBlock {
     }
 
     default void setMachineOwner(MetaMachine machine, ServerPlayer player) {
-        if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
-            Optional<Team> team = FTBTeamsAPIImpl.INSTANCE.getManager().getTeamForPlayerID(player.getUUID());
-            if (team.isPresent()) {
-                machine.holder.setOwner(new FTBOwner(team.get(), player.getUUID()));
-                return;
-            }
-        }
-        if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
-            Guild guild = GuildHandler.read(player.server).get(player);
-            if (guild != null) {
-                machine.holder.setOwner(new ArgonautsOwner(guild, player.getUUID()));
-                return;
-            }
-        }
-        machine.holder.setOwner(new PlayerOwner(player.getUUID()));
+        machine.holder.setOwnerUUID(player.getUUID());
     }
 }
