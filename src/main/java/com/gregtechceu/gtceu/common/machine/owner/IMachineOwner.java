@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
 
     void displayInfo(List<Component> compList);
 
-    static IMachineOwner create(CompoundTag tag) {
+    static @Nullable IMachineOwner create(CompoundTag tag) {
         MachineOwnerType type = MachineOwnerType.VALUES[tag.getInt("type")];
         if (!type.isAvailable()) {
             GTCEu.LOGGER.warn("Machine ownership system: {} is not available", type.name());
@@ -70,7 +71,7 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
 
     enum MachineOwnerType {
 
-        PLAYER,
+        PLAYER(() -> true, "Player"),
         FTB(GTCEu.Mods::isFTBTeamsLoaded, "FTB Teams"),
         ARGONAUTS(GTCEu.Mods::isArgonautsLoaded, "Argonauts Guild");
 
@@ -82,14 +83,9 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
         @Getter
         private final String name;
 
-        private MachineOwnerType(BooleanSupplier availabilitySupplier, String name) {
+        MachineOwnerType(BooleanSupplier availabilitySupplier, String name) {
             this.availabilitySupplier = availabilitySupplier;
             this.name = name;
-        }
-
-        private MachineOwnerType() {
-            this.available = true;
-            this.name = "Player";
         }
 
         public boolean isAvailable() {
