@@ -7,24 +7,21 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 import dev.ftb.mods.ftbteams.FTBTeamsAPIImpl;
 import dev.ftb.mods.ftbteams.api.Team;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public final class FTBOwner implements IMachineOwner {
 
     @Getter
     private Team team;
     @Getter
     private UUID playerUUID;
-
-    public FTBOwner() {}
-
-    public FTBOwner(Team team, UUID player) {
-        this.team = team;
-        this.playerUUID = player;
-    }
 
     @Override
     public void save(CompoundTag tag) {
@@ -56,8 +53,7 @@ public final class FTBOwner implements IMachineOwner {
 
     @Override
     public boolean isPlayerFriendly(Player player) {
-        if (team.getRankForPlayer(player.getUUID()).isAllyOrBetter()) return true;
-        return false;
+        return team.getRankForPlayer(player.getUUID()).isAllyOrBetter();
     }
 
     @Override

@@ -8,11 +8,15 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 import earth.terrarium.argonauts.api.guild.Guild;
 import earth.terrarium.argonauts.common.handlers.guild.GuildHandler;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public final class ArgonautsOwner implements IMachineOwner {
 
     @Getter
@@ -20,14 +24,6 @@ public final class ArgonautsOwner implements IMachineOwner {
     @Getter
     private UUID playerUUID;
     private MinecraftServer server;
-
-    public ArgonautsOwner() {}
-
-    public ArgonautsOwner(Guild guild, UUID player) {
-        this.guild = guild;
-        this.playerUUID = player;
-        this.server = ServerLifecycleHooks.getCurrentServer();
-    }
 
     @Override
     public void save(CompoundTag tag) {
@@ -47,19 +43,13 @@ public final class ArgonautsOwner implements IMachineOwner {
     public boolean isPlayerInTeam(Player player) {
         if (player.getUUID().equals(this.playerUUID)) return true;
         var otherGuild = GuildHandler.read(server).get(server, player.getUUID());
-        if (otherGuild != null && otherGuild.equals(this.guild)) return true;
-
-        return false;
+        return otherGuild != null && otherGuild.equals(this.guild);
     }
 
     @Override
     public boolean isPlayerFriendly(Player player) {
-        if (guild.isPublic()) return true;
-
-        if (guild.members().isMember(player.getUUID())) return true;
-        if (guild.members().isInvited(player.getUUID())) return true;
-        if (guild.members().isAllied(player.getUUID())) return true;
-        return false;
+        return guild.isPublic() || guild.members().isMember(player.getUUID()) ||
+                guild.members().isAllied(player.getUUID());
     }
 
     @Override

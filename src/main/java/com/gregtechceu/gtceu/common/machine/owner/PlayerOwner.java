@@ -6,14 +6,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 import java.util.UUID;
 
+@NoArgsConstructor
 public final class PlayerOwner implements IMachineOwner {
 
     private UUID playerUUID;
-
-    public PlayerOwner() {}
 
     public PlayerOwner(UUID player) {
         this.playerUUID = player;
