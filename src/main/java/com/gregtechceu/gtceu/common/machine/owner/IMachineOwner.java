@@ -17,6 +17,8 @@ import java.util.function.BooleanSupplier;
 
 public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOwner {
 
+    UUID EMPTY = new UUID(0, 0);
+
     void save(CompoundTag tag);
 
     void load(CompoundTag tag);

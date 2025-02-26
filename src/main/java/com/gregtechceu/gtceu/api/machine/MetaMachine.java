@@ -68,14 +68,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import com.mojang.datafixers.util.Pair;
-import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
-import dev.ftb.mods.ftbteams.api.Team;
-import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
-import earth.terrarium.argonauts.api.guild.Guild;
-import earth.terrarium.argonauts.api.guild.GuildApi;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -673,36 +667,15 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
     // ****** Ownership ********//
     //////////////////////////////////////
 
-    @SuppressWarnings({ "UnstableApiUsage", "deprecation" })
     public @Nullable IMachineOwner getOwner() {
         if (ownerUUID == null) {
             return null;
         }
         if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
-            Optional<Team> team;
-            if (FTBTeamsAPI.api().isManagerLoaded()) {
-                team = FTBTeamsAPI.api().getManager().getTeamForPlayerID(ownerUUID);
-            } else if (FTBTeamsAPI.api().isClientManagerLoaded()) {
-                team = FTBTeamsAPI.api().getClientManager().getTeams().stream()
-                        .filter(t -> t.getMembers().contains(ownerUUID))
-                        .findFirst();
-            } else {
-                team = Optional.empty();
-            }
-            if (team.isPresent()) {
-                return new FTBOwner(team.get(), ownerUUID);
-            }
+            return new FTBOwner(ownerUUID);
         }
         if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
-            Guild guild;
-            if (GTCEu.isClientThread()) {
-                guild = GuildClientApi.API.getPlayerGuild(ownerUUID);
-            } else {
-                guild = GuildApi.API.get(ServerLifecycleHooks.getCurrentServer(), ownerUUID);
-            }
-            if (guild != null) {
-                return new ArgonautsOwner(guild, ownerUUID);
-            }
+            return new ArgonautsOwner(ownerUUID);
         }
         return new PlayerOwner(ownerUUID);
     }
