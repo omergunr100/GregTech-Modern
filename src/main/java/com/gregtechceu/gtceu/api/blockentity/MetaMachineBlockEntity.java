@@ -16,14 +16,12 @@ import com.gregtechceu.gtceu.api.misc.LaserContainerList;
 import com.gregtechceu.gtceu.api.pipenet.longdistance.ILDEndpoint;
 import com.gregtechceu.gtceu.client.renderer.GTRendererProvider;
 import com.gregtechceu.gtceu.common.datafixers.TagFixer;
-import com.gregtechceu.gtceu.common.machine.owner.*;
 import com.gregtechceu.gtceu.common.pipelike.fluidpipe.longdistance.LDFluidEndpointMachine;
 import com.gregtechceu.gtceu.common.pipelike.item.longdistance.LDItemEndpointMachine;
 import com.gregtechceu.gtceu.utils.GTTransferUtils;
 
 import com.lowdragmc.lowdraglib.client.renderer.IRenderer;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.managed.MultiManagedStorage;
 
 import net.minecraft.core.BlockPos;
@@ -41,15 +39,10 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import appeng.api.networking.IInWorldGridNodeHost;
 import appeng.capabilities.Capabilities;
-import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
-import dev.ftb.mods.ftbteams.api.Team;
-import earth.terrarium.argonauts.api.guild.GuildApi;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,11 +58,6 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
     public final MultiManagedStorage managedStorage = new MultiManagedStorage();
     @Getter
     public final MetaMachine metaMachine;
-    @Setter
-    @Getter
-    @Persisted
-    @Nullable
-    private UUID ownerUUID;
     private final long offset = GTValues.RNG.nextInt(20);
 
     protected MetaMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
@@ -140,34 +128,6 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
         if (getLevel() != null) {
             getLevel().blockEntityChanged(getBlockPos());
         }
-    }
-
-    @SuppressWarnings({ "UnstableApiUsage", "deprecation" })
-    public IMachineOwner getOwner() {
-        if (ownerUUID == null) {
-            return null;
-        }
-        if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
-            Optional<Team> team = FTBTeamsAPI.api().getManager().getTeamForPlayerID(ownerUUID);
-            if (team.isPresent()) {
-                return new FTBOwner(team.get(), ownerUUID);
-            }
-        }
-        if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
-            var server = ServerLifecycleHooks.getCurrentServer();
-            var guild = GuildApi.API.get(server, ownerUUID);
-            if (guild != null) {
-                return new ArgonautsOwner(guild, ownerUUID);
-            }
-        }
-        return new PlayerOwner(ownerUUID);
-    }
-
-    public PlayerOwner getPlayerOwner() {
-        if (ownerUUID == null) {
-            return null;
-        }
-        return new PlayerOwner(ownerUUID);
     }
 
     @Nullable
@@ -352,21 +312,8 @@ public class MetaMachineBlockEntity extends BlockEntity implements IMachineBlock
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        if (ownerUUID != null) {
-            tag.putUUID("ownerUUID", ownerUUID);
-        }
-    }
-
-    @Override
     public void load(CompoundTag tag) {
         TagFixer.fixFluidTags(tag);
         super.load(tag);
-        if (tag.contains("ownerUUID")) {
-            ownerUUID = tag.getUUID("ownerUUID");
-        } else {
-            ownerUUID = null;
-        }
     }
 }

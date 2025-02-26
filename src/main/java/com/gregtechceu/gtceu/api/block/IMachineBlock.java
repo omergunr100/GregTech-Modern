@@ -9,7 +9,6 @@ import com.lowdragmc.lowdraglib.client.renderer.IBlockRendererProvider;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -77,9 +76,5 @@ public interface IMachineBlock extends IBlockRendererProvider, EntityBlock {
             }
         }
         return null;
-    }
-
-    default void setMachineOwner(MetaMachine machine, ServerPlayer player) {
-        machine.holder.setOwnerUUID(player.getUUID());
     }
 }

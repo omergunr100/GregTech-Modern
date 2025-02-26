@@ -26,6 +26,10 @@ import com.gregtechceu.gtceu.api.transfer.fluid.IFluidHandlerModifiable;
 import com.gregtechceu.gtceu.common.cover.FluidFilterCover;
 import com.gregtechceu.gtceu.common.cover.ItemFilterCover;
 import com.gregtechceu.gtceu.common.item.tool.behavior.ToolModeSwitchBehavior;
+import com.gregtechceu.gtceu.common.machine.owner.ArgonautsOwner;
+import com.gregtechceu.gtceu.common.machine.owner.FTBOwner;
+import com.gregtechceu.gtceu.common.machine.owner.IMachineOwner;
+import com.gregtechceu.gtceu.common.machine.owner.PlayerOwner;
 
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
@@ -64,16 +68,20 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import com.mojang.datafixers.util.Pair;
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftbteams.api.Team;
+import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
+import earth.terrarium.argonauts.api.guild.Guild;
+import earth.terrarium.argonauts.api.guild.GuildApi;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -88,6 +96,7 @@ import static com.gregtechceu.gtceu.api.item.tool.ToolHelper.getBehaviorsTag;
  *           All fundamental features will be implemented here.
  *           To add additional features, you can see {@link IMachineFeature}
  */
+@SuppressWarnings("removal")
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscription, IAppearance, IToolGridHighlight,
@@ -96,6 +105,12 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(MetaMachine.class);
     @Getter
     private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
+    @Setter
+    @Getter
+    @Persisted
+    @DescSynced
+    @Nullable
+    private UUID ownerUUID;
     @Getter
     public final IMachineBlockEntity holder;
     @Getter
@@ -652,6 +667,51 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
         if (cover == null) return false;
 
         return cover.canConnectRedstone();
+    }
+
+    //////////////////////////////////////
+    // ****** Ownership ********//
+    //////////////////////////////////////
+
+    @SuppressWarnings({ "UnstableApiUsage", "deprecation" })
+    public @Nullable IMachineOwner getOwner() {
+        if (ownerUUID == null) {
+            return null;
+        }
+        if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
+            Optional<Team> team;
+            if (FTBTeamsAPI.api().isManagerLoaded()) {
+                team = FTBTeamsAPI.api().getManager().getTeamForPlayerID(ownerUUID);
+            } else if (FTBTeamsAPI.api().isClientManagerLoaded()) {
+                team = FTBTeamsAPI.api().getClientManager().getTeams().stream()
+                        .filter(t -> t.getMembers().contains(ownerUUID))
+                        .findFirst();
+            } else {
+                team = Optional.empty();
+            }
+            if (team.isPresent()) {
+                return new FTBOwner(team.get(), ownerUUID);
+            }
+        }
+        if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
+            Guild guild;
+            if (GTCEu.isClientThread()) {
+                guild = GuildClientApi.API.getPlayerGuild(ownerUUID);
+            } else {
+                guild = GuildApi.API.get(ServerLifecycleHooks.getCurrentServer(), ownerUUID);
+            }
+            if (guild != null) {
+                return new ArgonautsOwner(guild, ownerUUID);
+            }
+        }
+        return new PlayerOwner(ownerUUID);
+    }
+
+    public @Nullable PlayerOwner getPlayerOwner() {
+        if (ownerUUID == null) {
+            return null;
+        }
+        return new PlayerOwner(ownerUUID);
     }
 
     //////////////////////////////////////

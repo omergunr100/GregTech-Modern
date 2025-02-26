@@ -82,10 +82,10 @@ public class DataItemBehavior implements IInteractionItem, IAddInformation, IDat
     @Override
     public InteractionResult onItemUseFirst(ItemStack itemStack, UseOnContext context) {
         if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof MetaMachineBlockEntity blockEntity) {
-            if (!IMachineOwner.canOpenOwnerMachine(context.getPlayer(), blockEntity)) {
+            var machine = blockEntity.getMetaMachine();
+            if (!IMachineOwner.canOpenOwnerMachine(context.getPlayer(), machine)) {
                 return InteractionResult.FAIL;
             }
-            var machine = blockEntity.getMetaMachine();
             if (machine instanceof IDataStickInteractable interactable) {
                 if (context.isSecondaryUseActive()) {
                     if (ResearchManager.readResearchId(itemStack) == null) {
