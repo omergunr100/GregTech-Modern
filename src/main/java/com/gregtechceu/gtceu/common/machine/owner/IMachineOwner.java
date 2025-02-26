@@ -21,6 +21,7 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
 
     UUID EMPTY = new UUID(0, 0);
     Map<UUID, IMachineOwner> CACHE = new Object2ObjectOpenHashMap<>();
+    Map<UUID, PlayerOwner> PLAYER_OWNERS = new Object2ObjectOpenHashMap<>();
 
     void save(CompoundTag tag);
 
@@ -43,9 +44,21 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
         } else if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
             owner = new ArgonautsOwner(playerUUID);
         } else {
-            owner = new PlayerOwner(playerUUID);
+            owner = getPlayerOwner(playerUUID);
         }
         CACHE.put(playerUUID, owner);
+        return owner;
+    }
+
+    static @Nullable PlayerOwner getPlayerOwner(UUID playerUUID) {
+        if (playerUUID == null) {
+            return null;
+        }
+        if (PLAYER_OWNERS.containsKey(playerUUID)) {
+            return PLAYER_OWNERS.get(playerUUID);
+        }
+        var owner = new PlayerOwner(playerUUID);
+        PLAYER_OWNERS.put(playerUUID, owner);
         return owner;
     }
 

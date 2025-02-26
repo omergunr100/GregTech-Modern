@@ -670,10 +670,7 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
     }
 
     public @Nullable PlayerOwner getPlayerOwner() {
-        if (ownerUUID == null) {
-            return null;
-        }
-        return new PlayerOwner(ownerUUID);
+        return IMachineOwner.getPlayerOwner(ownerUUID);
     }
 
     //////////////////////////////////////
