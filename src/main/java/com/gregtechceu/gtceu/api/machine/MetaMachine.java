@@ -26,8 +26,6 @@ import com.gregtechceu.gtceu.api.transfer.fluid.IFluidHandlerModifiable;
 import com.gregtechceu.gtceu.common.cover.FluidFilterCover;
 import com.gregtechceu.gtceu.common.cover.ItemFilterCover;
 import com.gregtechceu.gtceu.common.item.tool.behavior.ToolModeSwitchBehavior;
-import com.gregtechceu.gtceu.common.machine.owner.ArgonautsOwner;
-import com.gregtechceu.gtceu.common.machine.owner.FTBOwner;
 import com.gregtechceu.gtceu.common.machine.owner.IMachineOwner;
 import com.gregtechceu.gtceu.common.machine.owner.PlayerOwner;
 
@@ -668,16 +666,7 @@ public class MetaMachine implements IEnhancedManaged, IToolable, ITickSubscripti
     //////////////////////////////////////
 
     public @Nullable IMachineOwner getOwner() {
-        if (ownerUUID == null) {
-            return null;
-        }
-        if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
-            return new FTBOwner(ownerUUID);
-        }
-        if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
-            return new ArgonautsOwner(ownerUUID);
-        }
-        return new PlayerOwner(ownerUUID);
+        return IMachineOwner.getOwner(ownerUUID);
     }
 
     public @Nullable PlayerOwner getPlayerOwner() {

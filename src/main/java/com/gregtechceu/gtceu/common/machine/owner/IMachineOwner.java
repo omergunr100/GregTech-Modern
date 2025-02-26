@@ -8,16 +8,19 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
 public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOwner {
 
     UUID EMPTY = new UUID(0, 0);
+    Map<UUID, IMachineOwner> CACHE = new Object2ObjectOpenHashMap<>();
 
     void save(CompoundTag tag);
 
@@ -26,6 +29,25 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
     MachineOwnerType type();
 
     void displayInfo(List<Component> compList);
+
+    static @Nullable IMachineOwner getOwner(UUID playerUUID) {
+        if (playerUUID == null) {
+            return null;
+        }
+        if (CACHE.containsKey(playerUUID)) {
+            return CACHE.get(playerUUID);
+        }
+        IMachineOwner owner;
+        if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
+            owner = new FTBOwner(playerUUID);
+        } else if (IMachineOwner.MachineOwnerType.ARGONAUTS.isAvailable()) {
+            owner = new ArgonautsOwner(playerUUID);
+        } else {
+            owner = new PlayerOwner(playerUUID);
+        }
+        CACHE.put(playerUUID, owner);
+        return owner;
+    }
 
     static @Nullable IMachineOwner create(CompoundTag tag) {
         MachineOwnerType type = MachineOwnerType.VALUES[tag.getInt("type")];
