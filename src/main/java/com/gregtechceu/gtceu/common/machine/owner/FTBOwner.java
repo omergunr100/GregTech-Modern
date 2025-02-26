@@ -1,8 +1,12 @@
 package com.gregtechceu.gtceu.common.machine.owner;
 
+import com.gregtechceu.gtceu.GTCEu;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
@@ -33,9 +37,17 @@ public final class FTBOwner implements IMachineOwner {
     @Override
     public void load(CompoundTag tag) {
         try {
-            if (tag.contains("teamUUID"))
-                this.team = FTBTeamsAPI.api().getManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
-            else this.team = null;
+            if (tag.contains("teamUUID")) {
+                if (FTBTeamsAPI.api().isManagerLoaded()) {
+                    this.team = FTBTeamsAPI.api().getManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
+                } else if (FTBTeamsAPI.api().isClientManagerLoaded()) {
+                    this.team = FTBTeamsAPI.api().getClientManager().getTeamByID(tag.getUUID("teamUUID")).orElse(null);
+                } else {
+                    team = null;
+                }
+            } else {
+                this.team = null;
+            }
         } catch (NullPointerException e) {
             this.team = null;
         }
@@ -68,20 +80,20 @@ public final class FTBOwner implements IMachineOwner {
     public void displayInfo(List<Component> compList) {
         compList.add(Component.translatable("behavior.portable_scanner.machine_ownership", type().getName()));
         compList.add(Component.translatable("behavior.portable_scanner.team_name", team.getName()));
-        var serverPlayer = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(playerUUID);
-        final String[] playerName = new String[1];
-        boolean isOnline;
-        if (serverPlayer != null) {
-            playerName[0] = serverPlayer.getDisplayName().getString();
-            isOnline = true;
-        } else {
-            var cache = ServerLifecycleHooks.getCurrentServer().getProfileCache();
-            if (cache != null) {
-                cache.get(playerUUID).ifPresent(value -> playerName[0] = value.getName());
+        final var playerName = UsernameCache.getLastKnownUsername(playerUUID);
+        String online;
+        if (GTCEu.isClientThread()) {
+            var connection = Minecraft.getInstance().getConnection();
+            if (connection != null) {
+                online = String.valueOf(connection.getOnlinePlayerIds().contains(playerUUID));
+            } else {
+                online = "Not Available";
             }
-            isOnline = false;
+        } else {
+            online = String
+                    .valueOf(ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(playerUUID) != null);
         }
-        compList.add(Component.translatable("behavior.portable_scanner.player_name", playerName[0], isOnline));
+        compList.add(Component.translatable("behavior.portable_scanner.player_name", playerName, online));
     }
 
     @Override
