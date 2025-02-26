@@ -233,8 +233,10 @@ public class MinerMachine extends WorkableTieredMachine
 
     @Override
     public void setOutputFacingItems(@Nullable Direction outputFacing) {
-        this.outputFacingItems = outputFacing;
-        updateAutoOutputSubscription();
+        if (outputFacing != Direction.DOWN) {
+            this.outputFacingItems = outputFacing;
+            updateAutoOutputSubscription();
+        }
     }
 
     protected void chargeBattery() {
