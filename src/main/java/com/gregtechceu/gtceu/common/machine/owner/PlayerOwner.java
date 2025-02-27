@@ -76,4 +76,17 @@ public final class PlayerOwner implements IMachineOwner {
     public MachineOwnerType type() {
         return MachineOwnerType.PLAYER;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (!(object instanceof PlayerOwner that)) return false;
+
+        return playerUUID.equals(that.playerUUID);
+    }
+
+    @Override
+    public int hashCode() {
+        return playerUUID.hashCode();
+    }
 }

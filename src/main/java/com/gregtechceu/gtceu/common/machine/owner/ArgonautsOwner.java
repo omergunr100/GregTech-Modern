@@ -104,4 +104,17 @@ public final class ArgonautsOwner implements IMachineOwner {
     public MachineOwnerType type() {
         return MachineOwnerType.ARGONAUTS;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (!(object instanceof ArgonautsOwner that)) return false;
+
+        return playerUUID.equals(that.playerUUID);
+    }
+
+    @Override
+    public int hashCode() {
+        return playerUUID.hashCode();
+    }
 }
