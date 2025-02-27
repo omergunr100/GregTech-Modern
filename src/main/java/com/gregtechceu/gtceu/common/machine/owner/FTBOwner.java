@@ -1,7 +1,6 @@
 package com.gregtechceu.gtceu.common.machine.owner;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
@@ -37,16 +36,16 @@ public final class FTBOwner implements IMachineOwner {
     }
 
     @Override
-    public boolean isPlayerInTeam(Player player) {
-        if (player.getUUID().equals(this.playerUUID)) return true;
+    public boolean isPlayerInTeam(UUID playerUUID) {
+        if (this.playerUUID.equals(playerUUID)) return true;
         if (FTBTeamsAPI.api().isManagerLoaded()) {
-            return FTBTeamsAPI.api().getManager().arePlayersInSameTeam(player.getUUID(), this.playerUUID);
+            return FTBTeamsAPI.api().getManager().arePlayersInSameTeam(playerUUID, this.playerUUID);
         } else if (FTBTeamsAPI.api().isClientManagerLoaded()) {
             var ownTeam = getPlayerTeam(this.playerUUID);
             if (ownTeam == null) {
                 return false;
             }
-            var otherTeam = getPlayerTeam(player.getUUID());
+            var otherTeam = getPlayerTeam(playerUUID);
             return otherTeam != null && ownTeam.getTeamId().equals(otherTeam.getTeamId());
         } else {
             return true;
@@ -54,12 +53,12 @@ public final class FTBOwner implements IMachineOwner {
     }
 
     @Override
-    public boolean isPlayerFriendly(Player player) {
+    public boolean isPlayerFriendly(UUID playerUUID) {
         var team = getTeam();
         if (team == null) {
-            return playerUUID.equals(player.getUUID());
+            return this.playerUUID.equals(playerUUID);
         }
-        return team.getRankForPlayer(player.getUUID()).isAllyOrBetter();
+        return team.getRankForPlayer(playerUUID).isAllyOrBetter();
     }
 
     @Override

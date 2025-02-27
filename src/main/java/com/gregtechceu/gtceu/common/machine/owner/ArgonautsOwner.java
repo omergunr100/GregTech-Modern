@@ -3,7 +3,6 @@ package com.gregtechceu.gtceu.common.machine.owner;
 import com.gregtechceu.gtceu.GTCEu;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import earth.terrarium.argonauts.api.client.guild.GuildClientApi;
@@ -38,20 +37,19 @@ public final class ArgonautsOwner implements IMachineOwner {
     }
 
     @Override
-    public boolean isPlayerInTeam(Player player) {
-        if (player.getUUID().equals(this.playerUUID)) return true;
-        var otherGuild = getPlayerGuild(player.getUUID());
+    public boolean isPlayerInTeam(UUID playerUUID) {
+        if (this.playerUUID.equals(playerUUID)) return true;
+        var otherGuild = getPlayerGuild(playerUUID);
         return otherGuild != null && otherGuild.equals(getGuild());
     }
 
     @Override
-    public boolean isPlayerFriendly(Player player) {
+    public boolean isPlayerFriendly(UUID playerUUID) {
         var guild = getGuild();
         if (guild == null) {
-            return playerUUID.equals(player.getUUID());
+            return this.playerUUID.equals(playerUUID);
         }
-        return guild.isPublic() || guild.members().isMember(player.getUUID()) ||
-                guild.members().isAllied(player.getUUID());
+        return guild.isPublic() || guild.members().isMember(playerUUID) || guild.members().isAllied(playerUUID);
     }
 
     @Override

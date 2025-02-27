@@ -1,7 +1,6 @@
 package com.gregtechceu.gtceu.common.machine.owner;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.UsernameCache;
 
 import lombok.AllArgsConstructor;
@@ -17,13 +16,13 @@ public final class PlayerOwner implements IMachineOwner {
     private UUID playerUUID;
 
     @Override
-    public boolean isPlayerInTeam(Player player) {
-        return playerUUID.equals(player.getUUID());
+    public boolean isPlayerInTeam(UUID playerUUID) {
+        return this.playerUUID.equals(playerUUID);
     }
 
     @Override
-    public boolean isPlayerFriendly(Player player) {
-        return playerUUID.equals(player.getUUID());
+    public boolean isPlayerFriendly(UUID playerUUID) {
+        return this.playerUUID.equals(playerUUID);
     }
 
     @Override

@@ -61,7 +61,7 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
      * @return ownership object
      */
     @ApiStatus.Internal
-    static IMachineOwner makeOwner(UUID playerUUID) {
+    private static IMachineOwner makeOwner(UUID playerUUID) {
         IMachineOwner owner;
         if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
             owner = new FTBOwner(playerUUID);
@@ -80,9 +80,17 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
         return PLAYER_OWNERS.computeIfAbsent(playerUUID, PlayerOwner::new);
     }
 
-    boolean isPlayerInTeam(Player player);
+    default boolean isPlayerInTeam(Player player) {
+        return isPlayerInTeam(player.getUUID());
+    }
 
-    boolean isPlayerFriendly(Player player);
+    boolean isPlayerInTeam(UUID playerUUID);
+
+    default boolean isPlayerFriendly(Player player) {
+        return isPlayerFriendly(player.getUUID());
+    }
+
+    boolean isPlayerFriendly(UUID playerUUID);
 
     static boolean canOpenOwnerMachine(Player player, MetaMachine machine) {
         if (!ConfigHolder.INSTANCE.machines.onlyOwnerGUI) return true;
