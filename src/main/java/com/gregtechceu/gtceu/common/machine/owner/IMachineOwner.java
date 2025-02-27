@@ -4,12 +4,15 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.UsernameCache;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -20,24 +23,45 @@ import java.util.function.BooleanSupplier;
 public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOwner {
 
     UUID EMPTY = new UUID(0, 0);
-    Map<UUID, IMachineOwner> CACHE = new Object2ObjectOpenHashMap<>();
+    Map<UUID, IMachineOwner> MACHINE_OWNERS = new Object2ObjectOpenHashMap<>();
     Map<UUID, PlayerOwner> PLAYER_OWNERS = new Object2ObjectOpenHashMap<>();
-
-    void save(CompoundTag tag);
-
-    void load(CompoundTag tag);
 
     MachineOwnerType type();
 
     void displayInfo(List<Component> compList);
 
+    static void displayPlayerInfo(List<Component> compList, UUID playerUUID) {
+        final var playerName = UsernameCache.getLastKnownUsername(playerUUID);
+        var online = "gtceu.tooltip.status.trinary.";
+        if (GTCEu.isClientThread()) {
+            var connection = Minecraft.getInstance().getConnection();
+            if (connection != null) {
+                online += connection.getOnlinePlayerIds().contains(playerUUID);
+            } else {
+                online += "unknown";
+            }
+        } else {
+            online += ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(playerUUID) != null;
+        }
+        compList.add(Component.translatable("behavior.portable_scanner.player_name",
+                playerName, Component.translatable(online)));
+    }
+
     static @Nullable IMachineOwner getOwner(UUID playerUUID) {
         if (playerUUID == null) {
             return null;
         }
-        if (CACHE.containsKey(playerUUID)) {
-            return CACHE.get(playerUUID);
-        }
+        return MACHINE_OWNERS.computeIfAbsent(playerUUID, IMachineOwner::makeOwner);
+    }
+
+    /**
+     * Do not use this method, use the caching {@link #getOwner(UUID)} or {@link #getPlayerOwner(UUID)} instead
+     * 
+     * @param playerUUID the uuid of the player who owns the machine
+     * @return ownership object
+     */
+    @ApiStatus.Internal
+    static IMachineOwner makeOwner(UUID playerUUID) {
         IMachineOwner owner;
         if (IMachineOwner.MachineOwnerType.FTB.isAvailable()) {
             owner = new FTBOwner(playerUUID);
@@ -46,7 +70,6 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
         } else {
             owner = getPlayerOwner(playerUUID);
         }
-        CACHE.put(playerUUID, owner);
         return owner;
     }
 
@@ -54,34 +77,7 @@ public sealed interface IMachineOwner permits PlayerOwner, ArgonautsOwner, FTBOw
         if (playerUUID == null) {
             return null;
         }
-        if (PLAYER_OWNERS.containsKey(playerUUID)) {
-            return PLAYER_OWNERS.get(playerUUID);
-        }
-        var owner = new PlayerOwner(playerUUID);
-        PLAYER_OWNERS.put(playerUUID, owner);
-        return owner;
-    }
-
-    static @Nullable IMachineOwner create(CompoundTag tag) {
-        MachineOwnerType type = MachineOwnerType.VALUES[tag.getInt("type")];
-        if (!type.isAvailable()) {
-            GTCEu.LOGGER.warn("Machine ownership system: {} is not available", type.name());
-            return null;
-        }
-        IMachineOwner owner = switch (type) {
-            case PLAYER -> new PlayerOwner();
-            case FTB -> new FTBOwner();
-            case ARGONAUTS -> new ArgonautsOwner();
-        };
-        owner.load(tag);
-        return owner;
-    }
-
-    default CompoundTag write() {
-        var tag = new CompoundTag();
-        tag.putInt("type", type().ordinal());
-        save(tag);
-        return tag;
+        return PLAYER_OWNERS.computeIfAbsent(playerUUID, PlayerOwner::new);
     }
 
     boolean isPlayerInTeam(Player player);
